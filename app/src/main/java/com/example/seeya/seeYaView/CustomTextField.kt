@@ -16,30 +16,25 @@ fun CustomTextField(
     modifier: Modifier = Modifier,
     value: String,
     label: String,
+    onValueChange: (String) -> Unit
 ) {
     OutlinedTextField(
         modifier = modifier,
         value = value,
         label = {
             Text(
-                text = label
+                text = label,
             )
         },
-        onValueChange = {
-            // Todo
+        onValueChange = { newValue ->
+            onValueChange(newValue)
         },
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedLabelColor = TitleColor,
+            unfocusedLabelColor = ContainerColor,
             focusedLabelColor = TitleColor,
 
             focusedBorderColor = TitleColor,
             unfocusedTextColor = ContainerColor
         )
     )
-}
-
-@Preview
-@Composable
-private fun CustomTextFieldPreview() {
-    CustomTextField(value = "password", label = "Email")
 }

@@ -28,12 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.seeya.ui.theme.BackgroundBlack
 import com.example.seeya.ui.theme.ContainerColor
 import com.example.seeya.ui.theme.InterFont
 import com.example.seeya.ui.theme.TitleColor
@@ -43,7 +41,7 @@ import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginPage(modifier: Modifier = Modifier) {
+fun RegistrationPage(modifier: Modifier = Modifier) {
     val auth = Firebase.auth
 
     val email = remember {
@@ -115,7 +113,7 @@ fun LoginPage(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(80.dp))
 
                 Text(
-                    text = "Login",
+                    text = "Sign Up",
                     fontFamily = InterFont,
                     fontWeight = FontWeight.Bold,
                     color = Color.White.copy(0.85f),
@@ -145,44 +143,15 @@ fun LoginPage(modifier: Modifier = Modifier) {
                     }
                 )
 
-                Spacer(modifier = Modifier.height(15.dp))
-
-                TextButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp)
-                        .align(Alignment.Start)
-                    ,
-                    onClick = {
-                        // TODO
-                    }
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Forgot your password?",
-                            fontFamily = InterFont,
-                            fontSize = 13.sp,
-                            color = TitleColor.copy(alpha = 0.8f),
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(25.dp))
+                Spacer(modifier = Modifier.height(35.dp))
 
                 Button(
                     onClick = {
-                        if(
-                            email.value.isNotEmpty() &&
-                            password.value.isNotEmpty()
-                        ) {
-                            login(
-                                auth,
-                                email.value,
-                                password.value
-                            )
-                        }
+                        registration(
+                            auth,
+                            email.value,
+                            password.value
+                        )
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = TitleColor
@@ -190,7 +159,7 @@ fun LoginPage(modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(5.dp)
                 ) {
                     Text(
-                        text = "Sign In",
+                        text = "Create Account",
                         fontSize = 18.sp,
                         fontFamily = InterFont,
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp),
@@ -200,12 +169,12 @@ fun LoginPage(modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Row (
+                Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Don't have an account?",
+                        "Already have an account?",
                         fontFamily = InterFont,
                         color = ContainerColor,
                         fontSize = 13.sp
@@ -217,7 +186,7 @@ fun LoginPage(modifier: Modifier = Modifier) {
                         }
                     ) {
                         Text(
-                            text = "Create one!",
+                            text = "Login!",
                             fontFamily = InterFont,
                             color = TitleColor,
                             fontSize = 13.sp,
@@ -230,15 +199,15 @@ fun LoginPage(modifier: Modifier = Modifier) {
     }
 }
 
-private fun login(
+private fun registration(
     auth: FirebaseAuth,
     email: String,
     password: String
 ) {
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
-            if(task.isSuccessful) {
-                Log.d("My Log", "Succesfully Loged In")
+            if (task.isSuccessful) {
+                Log.d("My Log", "Succesfully Created Account")
             }
         }
 }

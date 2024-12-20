@@ -22,14 +22,14 @@ fun SeeYaLogo(fontSize: Int = 32) {
                 style = SpanStyle(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFF088F8F), // Teal
-                            Color(0xFFA78BFA) // Light Teal
+                            Color(0xFF088F8F),
+                            Color(0xFFA78BFA)
                         )
                     ),
                     fontFamily = InterFont,
                     fontWeight = FontWeight.Bold,
                     fontSize = fontSize.sp,
-                    letterSpacing = 1.2.sp
+                    letterSpacing = 1.2.sp,
                 )
             ) {
                 append("Seeya")
