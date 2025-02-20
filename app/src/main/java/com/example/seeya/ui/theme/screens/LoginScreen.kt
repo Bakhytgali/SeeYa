@@ -34,6 +34,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.seeya.R
+import com.example.seeya.ui.theme.Poppins
+import com.example.seeya.ui.theme.Unbounded
 import com.example.seeya.ui.theme.bgColor
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.primaryContainerColor
@@ -79,6 +81,7 @@ fun LoginScreen(
                 text = "Sign In",
                 fontSize = 32.sp,
                 color = primaryColor,
+                fontFamily = Unbounded,
                 fontWeight = FontWeight.Bold
             )
 
@@ -120,6 +123,7 @@ fun LoginScreen(
 
                     Text(
                         text = "Google",
+                        fontFamily = Unbounded,
                         color = grayText,
                         fontSize = 20.sp
                     )
@@ -131,6 +135,7 @@ fun LoginScreen(
             Text(
                 text = "or",
                 fontSize = 16.sp,
+                fontFamily = Unbounded,
                 color = grayText
             )
 
@@ -143,7 +148,6 @@ fun LoginScreen(
                 onValueChange = onEmailChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(5.dp)
             )
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -154,7 +158,6 @@ fun LoginScreen(
                 onValueChange = onPasswordChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(5.dp)
             )
 
             // Forgot password link
@@ -170,7 +173,8 @@ fun LoginScreen(
                     fontSize = 14.sp,
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(),
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = Poppins
                 )
             }
 
@@ -193,6 +197,7 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     fontSize = 20.sp,
+                    fontFamily = Unbounded,
                     modifier = Modifier.padding(5.dp),
                 )
             }
@@ -214,10 +219,13 @@ fun LoginScreen(
                     onClick = {
                         // TODO
                     },
+                    modifier = Modifier.padding(0.dp)
                 ) {
                     Text(
                         text = "Create one!",
-                        color = secondaryColor
+                        color = secondaryColor,
+                        fontSize = 16.sp,
+                        fontFamily = Poppins
                     )
                 }
             }

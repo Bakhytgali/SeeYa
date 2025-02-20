@@ -9,11 +9,16 @@ import androidx.compose.ui.unit.sp
 import com.example.seeya.R
 
 // "SeeYa" mobile application main font
-val Roboto = FontFamily(
-    Font(R.font.roboto_bold, FontWeight.Bold),
-    Font(R.font.roboto_regular, FontWeight.Normal)
+val Poppins = FontFamily(
+    Font(R.font.poppins_bold, FontWeight.Bold),
+    Font(R.font.poppins_regular, FontWeight.Normal)
+)
+
+val Unbounded = FontFamily(
+    Font(R.font.unbounded_bold, FontWeight.Bold),
+    Font(R.font.unbounded_regular, FontWeight.Normal)
 )
 
 val SeeYaTypography = Typography(
-    bodyLarge = TextStyle(fontFamily = Roboto, fontSize = 16.sp),
+    bodyLarge = TextStyle(fontFamily = Poppins, fontSize = 16.sp),
 )

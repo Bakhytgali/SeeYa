@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.seeya.ui.theme.Poppins
 import com.example.seeya.ui.theme.grayText
 import com.example.seeya.ui.theme.primaryColor
 import com.example.seeya.ui.theme.primaryContainerColor
@@ -30,7 +31,8 @@ fun CustomTextField(
     OutlinedTextField(
         value = text.value,
         textStyle = TextStyle(
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            fontFamily = Poppins
         ),
         placeholder = {
             Text(
