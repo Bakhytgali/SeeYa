@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SeeYa</string>
+
+    <string name="login_greet">
+        Welcome to SeeYa! Here you can find attend events, meet new people and have fun!
+    </string>
 </resources>
