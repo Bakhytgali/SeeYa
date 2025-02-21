@@ -20,5 +20,5 @@ val Unbounded = FontFamily(
 )
 
 val SeeYaTypography = Typography(
-    bodyLarge = TextStyle(fontFamily = Poppins, fontSize = 16.sp),
+    bodyLarge = TextStyle(fontFamily = Poppins, fontSize = 16.sp, color = primaryColor),
 )

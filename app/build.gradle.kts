@@ -51,6 +51,11 @@ android {
 
 dependencies {
 
+    // Retrofit
+    implementation(libs.retrofit) // Retrofit
+    implementation(libs.converter.gson) // Конвертер JSON
+    implementation(libs.logging.interceptor) // Логирование запросов
+
     // Status Bar Controller
     implementation(libs.accompanist.systemuicontroller)
 
