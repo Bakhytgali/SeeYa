@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.seeya.R
 import com.example.seeya.ui.theme.*
 import com.example.seeya.ui.theme.components.CustomTextField
@@ -23,6 +24,7 @@ import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
 fun LoginScreen(
+    navController: NavController,
     authViewModel: AuthViewModel
 ) {
     val email = remember { mutableStateOf("") }
@@ -40,7 +42,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(0.8f)
+                .fillMaxWidth(0.9f)
         ) {
             // SeeYa Logo
             Image(
@@ -168,7 +170,15 @@ fun LoginScreen(
                     if (email.value.isBlank() || password.value.isBlank()) {
                         isError.value = true
                     } else {
-                        authViewModel.login(email.value, password.value)
+                        authViewModel.login(
+                            email.value,
+                            password.value,
+                            onSuccess = {
+                                navController.navigate("main") {
+                                    popUpTo("login") {inclusive = true}
+                                }
+                            }
+                        )
                         Log.d("LoginScreen", "Login successful for ${email.value}")
                     }
                 },

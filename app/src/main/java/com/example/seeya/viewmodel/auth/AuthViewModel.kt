@@ -25,7 +25,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         loadUserFromPrefs() // Загружаем сохранённого юзера
     }
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             val response = repository.loginUser(email, password)
             if (response.isSuccessful) {
@@ -37,6 +37,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
                     _user.postValue(authResponse.user) // Обновляем UI
                     _token.postValue(authResponse.token)
                 }
+                onSuccess()
             }
         }
     }

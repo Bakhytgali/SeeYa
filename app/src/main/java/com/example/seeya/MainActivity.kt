@@ -4,7 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.seeya.data.repository.AuthRepository
 import com.example.seeya.ui.theme.SeeYaTheme
 import com.example.seeya.ui.theme.screens.AuthorizeScreen
@@ -27,12 +31,20 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SeeYaTheme {
-                // LoginScreen(authViewModel = authViewModel)
-
-               AuthorizeScreen(authViewModel = authViewModel)
-
-                // MainScreen()
+                AppNavigation(authViewModel)
             }
         }
+    }
+}
+
+
+@Composable
+fun AppNavigation(authViewModel: AuthViewModel) {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "authorize") {
+        composable("authorize") { AuthorizeScreen(navController, authViewModel) }
+        composable("login") { LoginScreen(navController, authViewModel) }
+        composable("main") { MainScreen(navController) }
     }
 }

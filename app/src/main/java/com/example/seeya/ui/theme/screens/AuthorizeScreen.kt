@@ -31,11 +31,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.seeya.R
 import com.example.seeya.ui.theme.Poppins
 import com.example.seeya.ui.theme.Unbounded
 import com.example.seeya.ui.theme.bgColor
 import com.example.seeya.ui.theme.components.CustomTextField
+import com.example.seeya.ui.theme.components.Dialog
 import com.example.seeya.ui.theme.grayText
 import com.example.seeya.ui.theme.primaryColor
 import com.example.seeya.ui.theme.secondaryColor
@@ -43,6 +45,7 @@ import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
 fun AuthorizeScreen(
+    navController: NavController,
     authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -65,6 +68,10 @@ fun AuthorizeScreen(
         mutableStateOf(false)
     }
 
+    val openAlertDialog = remember {
+        mutableStateOf(true)
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -76,8 +83,25 @@ fun AuthorizeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(0.8f)
+                .fillMaxWidth(0.9f)
         ) {
+
+            /*
+                if(openAlertDialog.value) {
+                Dialog(
+                    openAlertDialog = openAlertDialog,
+                    onConfirm = {
+                        openAlertDialog.value = true
+                    },
+                    onDismiss = {
+                        openAlertDialog.value = true
+                    },
+                    dialogText = "Confirm that you are gay",
+                    dialogTitle = "Confirm"
+                )
+            }
+             */
+
             // SeeYa Logo
             Image(
                 painter = painterResource(R.drawable.seeya_logo_mono),
@@ -186,7 +210,7 @@ fun AuthorizeScreen(
                         name.value.isBlank() ||
                         surname.value.isBlank() ||
                         username.value.isBlank()
-                        ) {
+                    ) {
                         isError.value = true
                     } else {
                         authViewModel.register(

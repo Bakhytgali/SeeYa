@@ -51,6 +51,9 @@ android {
 
 dependencies {
 
+    // Compose Navigation
+    implementation(libs.androidx.navigation.compose)
+
     // Retrofit
     implementation(libs.retrofit) // Retrofit
     implementation(libs.converter.gson) // Конвертер JSON
