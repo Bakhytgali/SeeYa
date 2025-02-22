@@ -1,16 +1,19 @@
-package com.example.seeya.viewmodel
+package com.example.seeya.viewmodel.auth
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.seeya.data.model.SignInRequest
 import com.example.seeya.data.model.User
 import com.example.seeya.data.repository.AuthRepository
 import com.example.seeya.utils.TokenManager
 import kotlinx.coroutines.launch
 
-class AuthViewModel(application: Application, private val repository: AuthRepository) : AndroidViewModel(application) {
+class AuthViewModel(application: Application, private val repository: AuthRepository) :
+    AndroidViewModel(application) {
 
     private val _user = MutableLiveData<User?>()
     val user: LiveData<User?> = _user
@@ -36,6 +39,28 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
                 }
             }
         }
+    }
+
+    fun register(name: String, surname: String, email: String, password: String, username: String) {
+        viewModelScope.launch {
+            val message = repository.registerUser(
+                SignInRequest(
+                    name = name,
+                    surname = surname,
+                    username = username,
+                    email = email,
+                    password = password
+                )
+            )
+
+            if (message != null) {
+                Log.d("AuthViewModel", message)
+            } else {
+                Log.e("AuthViewModel", "Registration Failed!")
+            }
+        }
+
+
     }
 
     private fun loadUserFromPrefs() {

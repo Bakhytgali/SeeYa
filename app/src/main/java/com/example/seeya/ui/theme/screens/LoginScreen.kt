@@ -19,12 +19,11 @@ import androidx.compose.ui.unit.sp
 import com.example.seeya.R
 import com.example.seeya.ui.theme.*
 import com.example.seeya.ui.theme.components.CustomTextField
-import com.example.seeya.viewmodel.AuthViewModel
+import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    authViewModel: AuthViewModel,
-    modifier: Modifier = Modifier
+    authViewModel: AuthViewModel
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -71,6 +70,49 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
+            Button(
+                onClick = {
+                    // TODO
+                },
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryContainerColor
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(5.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.google_logo),
+                        contentDescription = "Google Logo Icon",
+                        modifier = Modifier.size(30.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text(
+                        text = "Google",
+                        fontFamily = Unbounded,
+                        color = grayText,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            Text(
+                text = "or",
+                fontSize = 16.sp,
+                fontFamily = Unbounded,
+                color = grayText
+            )
+
+            Spacer(modifier = Modifier.height(15.dp))
+
             CustomTextField(
                 text = email,
                 placeholder = "Email",
@@ -103,6 +145,22 @@ fun LoginScreen(
                 )
             }
 
+            TextButton(
+                onClick = {
+                    // TODO
+                }
+            ) {
+                Text(
+                    text = "Forgot password?",
+                    color = grayText,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth(),
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = Poppins
+                )
+            }
+
             Spacer(modifier = Modifier.height(30.dp))
 
             Button(
@@ -126,6 +184,32 @@ fun LoginScreen(
                     fontFamily = Unbounded,
                     modifier = Modifier.padding(5.dp),
                 )
+            }
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Don't have an account?",
+                    color = grayText
+                )
+
+                TextButton(
+                    onClick = {
+                        // TODO
+                    },
+                    modifier = Modifier.padding(0.dp)
+                ) {
+                    Text(
+                        text = "Create one!",
+                        color = secondaryColor,
+                        fontSize = 16.sp,
+                        fontFamily = Poppins
+                    )
+                }
             }
         }
     }

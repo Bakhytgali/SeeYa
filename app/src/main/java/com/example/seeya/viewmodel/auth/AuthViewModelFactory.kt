@@ -1,4 +1,4 @@
-package com.example.seeya.viewmodel
+package com.example.seeya.viewmodel.auth
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

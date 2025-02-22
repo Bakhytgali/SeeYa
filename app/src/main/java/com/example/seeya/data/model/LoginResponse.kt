@@ -1,6 +1,6 @@
 package com.example.seeya.data.model
 
-data class AuthResponse(
+data class LoginResponse(
     val token: String,
     val user: User
 )
