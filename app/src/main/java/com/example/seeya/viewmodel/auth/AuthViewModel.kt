@@ -36,8 +36,9 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
 
                     _user.postValue(authResponse.user) // Обновляем UI
                     _token.postValue(authResponse.token)
+
+                    onSuccess()
                 }
-                onSuccess()
             }
         }
     }
