@@ -31,6 +31,7 @@ import com.example.seeya.ui.theme.*
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.ui.theme.components.OptionButton
+import com.example.seeya.utils.TokenManager
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.event.EventViewModel
 import java.io.ByteArrayOutputStream
@@ -90,10 +91,14 @@ fun CreateScreen(
             }
         }
     }
+    val user = TokenManager.getUser(context)
 
+    if (user == null) {
+        Log.e("CreateScreen", "Ошибка: User == null!")
+    } else {
+        Log.d("CreateScreen", "User: ${user.id}, ${user.name}, ${user.surname}, ${user.username}")
+    }
     // Получаем текущего пользователя из ViewModel
-    val currentUser = authViewModel.user.value
-
     MainScaffold(
         title = "Create",
         navController = navController
@@ -237,7 +242,7 @@ fun CreateScreen(
                     onClick = {
                         if (title.value.isBlank() || category.value.isBlank() ||
                             location.value.isBlank() || description.value.isBlank() ||
-                            selectedDate.value == "Select Date" || currentUser == null
+                            selectedDate.value == "Select Date" || user == null
                         ) {
                             // TODO: Show an error message
                         } else {
@@ -250,10 +255,10 @@ fun CreateScreen(
                                 location = location.value,
                                 startDate = parseDate(selectedDate.value),
                                 creator = Creator(
-                                    id = currentUser.id,
-                                    name = currentUser.name,
-                                    surname = currentUser.surname,
-                                    username = currentUser.username,
+                                    id = user.id,
+                                    name = user.name,
+                                    surname = user.surname,
+                                    username = user.username,
                                     rating = null
                                 ),
                                 onSuccess = {
@@ -287,7 +292,7 @@ fun CreateScreen(
 
 fun encodeToBase64(bitmap: Bitmap): String {
     val byteArrayOutputStream = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
     val byteArray = byteArrayOutputStream.toByteArray()
     return Base64.encodeToString(byteArray, Base64.DEFAULT)
 }
