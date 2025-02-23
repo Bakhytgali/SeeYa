@@ -1,10 +1,9 @@
 package com.example.seeya.ui.theme.screens
 
 import DashedBorderBox
+import android.app.DatePickerDialog
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,10 +26,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -41,7 +39,9 @@ import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.ui.theme.components.OptionButton
 import com.example.seeya.ui.theme.grayText
+import com.example.seeya.ui.theme.primaryContainerColor
 import com.example.seeya.ui.theme.secondaryColor
+import java.util.Calendar
 
 @Composable
 fun CreateScreen(
@@ -50,30 +50,30 @@ fun CreateScreen(
 ) {
 
     val options = listOf("Event", "Club")
-    val activeOption = remember {
-        mutableStateOf(options[0])
-    }
+    val activeOption = remember { mutableStateOf(options[0]) }
 
-    val title = remember {
-        mutableStateOf("")
-    }
-
-    val category = remember {
-        mutableStateOf("")
-    }
-
-    val location = remember {
-        mutableStateOf("")
-    }
-
-    val description = remember {
-        mutableStateOf("")
-    }
+    val title = remember { mutableStateOf("") }
+    val category = remember { mutableStateOf("") }
+    val location = remember { mutableStateOf("") }
+    val description = remember { mutableStateOf("") }
 
     val eventOptions = listOf("Open", "Closed")
-    val eventType = remember {
-        mutableStateOf(eventOptions[0])
-    }
+    val eventType = remember { mutableStateOf(eventOptions[0]) }
+
+    val context = LocalContext.current
+    val selectedDate = remember { mutableStateOf("Select Date") }
+    val openDatePicker = remember { mutableStateOf(false) }
+
+    // DatePicker Dialog
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, day ->
+            selectedDate.value = "$day/${month + 1}/$year"
+        },
+        Calendar.getInstance().get(Calendar.YEAR),
+        Calendar.getInstance().get(Calendar.MONTH),
+        Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+    )
 
     MainScaffold(
         title = "Create",
@@ -103,9 +103,7 @@ fun CreateScreen(
                         OptionButton(
                             text = option,
                             isActive = option == activeOption.value,
-                            onClick = {
-                                activeOption.value = option
-                            }
+                            onClick = { activeOption.value = option }
                         )
                     }
                 }
@@ -115,9 +113,7 @@ fun CreateScreen(
                 DashedBorderBox(
                     modifier = Modifier
                         .size(120.dp)
-                        .clickable {
-                            // TODO
-                        },
+                        .clickable { /* TODO: Open image picker */ },
                     borderColor = secondaryColor,
                 ) {
                     Box(
@@ -138,21 +134,33 @@ fun CreateScreen(
 
                 CustomTextField(
                     text = title,
-                    placeholder = if(activeOption.value == "Event") "Event Title" else "Club Name",
-                    onValueChange = {
-                        title.value = it
-                    },
+                    placeholder = if (activeOption.value == "Event") "Event Title" else "Club Name",
+                    onValueChange = { title.value = it },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(
+                    onClick = { datePickerDialog.show() },
+                    colors = ButtonDefaults.buttonColors(containerColor = primaryContainerColor),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(
+                        text = selectedDate.value,
+                        fontSize = 16.sp,
+                        fontFamily = Unbounded,
+                        color = secondaryColor
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 CustomTextField(
                     text = category,
                     placeholder = "Category",
-                    onValueChange = {
-                        category.value = it
-                    },
+                    onValueChange = { category.value = it },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -161,13 +169,11 @@ fun CreateScreen(
                 CustomTextField(
                     text = location,
                     placeholder = "Location",
-                    onValueChange = {
-                        location.value = it
-                    },
+                    onValueChange = { location.value = it },
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if(activeOption.value == "Event") {
+                if (activeOption.value == "Event") {
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Row(
@@ -185,9 +191,7 @@ fun CreateScreen(
                             OptionButton(
                                 text = option,
                                 isActive = option == eventType.value,
-                                onClick = {
-                                    eventType.value = option
-                                }
+                                onClick = { eventType.value = option }
                             )
                         }
                     }
@@ -197,9 +201,7 @@ fun CreateScreen(
 
                 CustomTextField(
                     text = description,
-                    onValueChange = {
-                        description.value = it
-                    },
+                    onValueChange = { description.value = it },
                     placeholder = "Description",
                     numberOfLines = 3,
                     modifier = Modifier.fillMaxWidth()
@@ -208,12 +210,8 @@ fun CreateScreen(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 Button(
-                    onClick = {
-                        // TODO
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = secondaryColor,
-                    ),
+                    onClick = { /* TODO: Handle event creation */ },
+                    colors = ButtonDefaults.buttonColors(containerColor = secondaryColor),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
                 ) {
@@ -230,4 +228,5 @@ fun CreateScreen(
         }
     }
 }
+
 
