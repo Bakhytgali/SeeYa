@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.Creator
+import com.example.seeya.data.model.Event
+import com.example.seeya.data.model.GetAllEventsResponse
 import com.example.seeya.data.repository.EventRepository
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -42,6 +44,25 @@ class EventViewModel(application: Application, private val repository: EventRepo
                 onSuccess()
             } else {
                 onError("Failed to create event: ${response?.message() ?: "Unknown error"}")
+            }
+        }
+    }
+
+    fun getAllEvents(
+        onSuccess: (List<Event>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val response = repository.getAllEvents()
+
+            if (response?.isSuccessful == true) {
+                response.body()?.let {
+                    onSuccess(
+                        it.events
+                    )
+                }
+            } else {
+                onError("Failed to fetch the events!: ${response?.message() ?: "Unknown Error"}")
             }
         }
     }

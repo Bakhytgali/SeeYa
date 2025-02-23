@@ -61,7 +61,7 @@ fun AppNavigation(authViewModel: AuthViewModel, eventViewModel: EventViewModel) 
     NavHost(navController = navController, startDestination = startDestination) {
         composable("authorize") { AuthorizeScreen(navController, authViewModel) }
         composable("login") { LoginScreen(navController, authViewModel) }
-        composable("main") { MainScreen(navController, authViewModel) }
+        composable("main") { MainScreen(navController, eventViewModel, authViewModel) }
         composable("create") { CreateScreen(navController, eventViewModel, authViewModel) }
     }
 }

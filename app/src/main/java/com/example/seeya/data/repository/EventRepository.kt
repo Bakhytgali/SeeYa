@@ -5,6 +5,7 @@ import com.example.seeya.data.api.APIService
 import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.CreateEventResponse
+import com.example.seeya.data.model.GetAllEventsResponse
 import com.example.seeya.utils.TokenManager
 import retrofit2.Response
 
@@ -24,6 +25,21 @@ class EventRepository(private val context: Context) {
                 response
             } else {
                 throw Exception("Failed to create event: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun getAllEvents(): Response<GetAllEventsResponse>? {
+        return try {
+            val response: Response<GetAllEventsResponse> = api.getAllEvents()
+
+            if(response.isSuccessful) {
+                response
+            } else {
+                throw Exception("Failed to fetch events: ${response.message()}")
             }
         } catch (e: Exception) {
             e.printStackTrace()

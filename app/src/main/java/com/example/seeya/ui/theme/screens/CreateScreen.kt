@@ -42,7 +42,7 @@ import java.util.Date
 fun CreateScreen(
     navController: NavController,
     eventViewModel: EventViewModel,
-    authViewModel: AuthViewModel, // Используем для получения текущего юзера
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
     val options = listOf("Event", "Club")
@@ -91,14 +91,9 @@ fun CreateScreen(
             }
         }
     }
+
     val user = TokenManager.getUser(context)
 
-    if (user == null) {
-        Log.e("CreateScreen", "Ошибка: User == null!")
-    } else {
-        Log.d("CreateScreen", "User: ${user.id}, ${user.name}, ${user.surname}, ${user.username}")
-    }
-    // Получаем текущего пользователя из ViewModel
     MainScaffold(
         title = "Create",
         navController = navController

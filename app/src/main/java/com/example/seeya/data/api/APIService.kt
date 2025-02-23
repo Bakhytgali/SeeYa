@@ -2,6 +2,7 @@ package com.example.seeya.data.api
 
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.CreateEventResponse
+import com.example.seeya.data.model.GetAllEventsResponse
 import com.example.seeya.data.model.LoginResponse
 import com.example.seeya.data.model.LoginRequest
 import com.example.seeya.data.model.SignInRequest
@@ -25,7 +26,15 @@ interface APIService {
 
 
         // CREATE AN EVENT
+
         @POST("events/create")
         suspend fun createEvent(@Header("Authorization") token: String, @Body request: CreateEventRequest): Response<CreateEventResponse>
+
+
+
+        // GET ALL EVENTS
+
+        @POST("events/")
+        suspend fun getAllEvents(): Response<GetAllEventsResponse>
     }
 }
