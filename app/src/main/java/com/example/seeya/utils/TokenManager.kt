@@ -2,6 +2,7 @@ package com.example.seeya.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.example.seeya.data.model.User
 import com.google.gson.Gson
 
@@ -38,8 +39,19 @@ object TokenManager {
     // Получаем объект `User`
     fun getUser(context: Context): User? {
         val userJson = getPrefs(context).getString(USER_KEY, null)
-        return userJson?.let { Gson().fromJson(it, User::class.java) }
+
+        Log.d("TokenManager", "Raw JSON: $userJson") // 🔍 Логируем JSON перед парсингом
+
+        return userJson?.let {
+            try {
+                Gson().fromJson(it, User::class.java)
+            } catch (e: Exception) {
+                Log.e("TokenManager", "Ошибка парсинга User: ${e.message}")
+                null
+            }
+        }
     }
+
 
     // Очищаем пользователя
     fun clearUser(context: Context) {
