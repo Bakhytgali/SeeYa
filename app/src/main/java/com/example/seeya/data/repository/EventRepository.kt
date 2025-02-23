@@ -13,9 +13,9 @@ class EventRepository(private val context: Context) {
 
     private val api = RetrofitClient.createApiService(context)
 
-    private val token = TokenManager.getToken(context)
-
     suspend fun createEvent(event: CreateEventRequest): Response<CreateEventResponse>? {
+        val token = TokenManager.getToken(context)
+
         return try {
             if (token.isNullOrEmpty()) {
                 throw Exception("No auth token found.")
@@ -50,12 +50,17 @@ class EventRepository(private val context: Context) {
 
     suspend fun getMyEvents(): Response<List<Event>>? {
         return try {
+            val token = TokenManager.getToken(context)
+
+            if (token.isNullOrEmpty()) {
+                throw Exception("No auth token found.")
+            }
             val response: Response<List<Event>> = api.getMyEvents("Bearer $token")
 
-            if(response.isSuccessful) {
+            if (response.isSuccessful) {
                 response
             } else {
-                throw Exception("Failed to fetch your events!: ${response.message()}")
+                throw Exception("Failed to fetch your events: ${response.message()}")
             }
         } catch (e: Exception) {
             e.printStackTrace()
