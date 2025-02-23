@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.seeya.data.repository.AuthRepository
 import com.example.seeya.ui.theme.SeeYaTheme
 import com.example.seeya.ui.theme.screens.AuthorizeScreen
+import com.example.seeya.ui.theme.screens.CreateScreen
 import com.example.seeya.ui.theme.screens.LoginScreen
 import com.example.seeya.ui.theme.screens.MainScreen
 import com.example.seeya.viewmodel.auth.AuthViewModel
@@ -42,9 +43,10 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "create") {
         composable("authorize") { AuthorizeScreen(navController, authViewModel) }
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController) }
+        composable("create") { CreateScreen(navController) }
     }
 }

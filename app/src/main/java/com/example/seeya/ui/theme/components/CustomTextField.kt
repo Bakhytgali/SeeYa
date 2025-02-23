@@ -30,17 +30,18 @@ fun CustomTextField(
 
     OutlinedTextField(
         value = text.value,
+        placeholder = {
+            Text(
+                text = placeholder,
+                fontSize = 16.sp,
+                fontFamily = Poppins,
+                color = grayText
+            )
+        },
         textStyle = TextStyle(
             fontSize = 16.sp,
             fontFamily = Poppins
         ),
-        placeholder = {
-            Text(
-                text = placeholder,
-                color = grayText,
-                fontSize = 16.sp
-            )
-        },
         onValueChange = onValueChange,
         maxLines = numberOfLines,
         shape = RoundedCornerShape(10.dp),
