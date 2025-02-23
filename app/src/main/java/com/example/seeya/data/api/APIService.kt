@@ -9,6 +9,7 @@ import com.example.seeya.data.model.SignInRequest
 import com.example.seeya.data.model.SignInResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 
@@ -27,7 +28,7 @@ interface APIService {
 
         // CREATE AN EVENT
 
-        @POST("events/create")
+        @GET("events/create")
         suspend fun createEvent(@Header("Authorization") token: String, @Body request: CreateEventRequest): Response<CreateEventResponse>
 
 
