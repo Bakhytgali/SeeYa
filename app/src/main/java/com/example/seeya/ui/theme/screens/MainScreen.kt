@@ -48,6 +48,7 @@ fun MainScreen(
         id = "something",
         name = "Rakhat",
         surname = "Bakhytgali",
+        username = "Rocky",
         rating = 5.0
     )
 
