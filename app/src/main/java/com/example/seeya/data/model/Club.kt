@@ -8,6 +8,6 @@ data class Club(
     val clubPicture: String,
     val isClosed: Boolean,
     val creatorId: String,
-    val participants: List<String>,
+    val participants: List<Participant>,
     val createdAt: Date,
 )
