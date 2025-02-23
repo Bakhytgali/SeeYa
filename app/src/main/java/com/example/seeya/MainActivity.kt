@@ -53,6 +53,6 @@ fun AppNavigation(authViewModel: AuthViewModel) {
         composable("authorize") { AuthorizeScreen(navController, authViewModel) }
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController, authViewModel) }
-        composable("create") { CreateScreen(navController) }
+        composable("create") { CreateScreen(navController, authViewModel) }
     }
 }

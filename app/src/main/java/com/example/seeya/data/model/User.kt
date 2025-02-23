@@ -7,6 +7,7 @@ data class User(
     var name: String,
     var surname: String,
     val email: String,
+    val username: String,
     val password: String,
     val isAdmin: Boolean,
     var profilePicture: String,

@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -25,16 +26,22 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.seeya.data.model.Creator
 import com.example.seeya.ui.theme.*
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.ui.theme.components.OptionButton
+import com.example.seeya.viewmodel.auth.AuthViewModel
+import com.example.seeya.viewmodel.event.EventViewModel
 import java.io.ByteArrayOutputStream
 import java.util.Calendar
+import java.util.Date
 
 @Composable
 fun CreateScreen(
     navController: NavController,
+    eventViewModel: EventViewModel,
+    authViewModel: AuthViewModel, // Используем для получения текущего юзера
     modifier: Modifier = Modifier
 ) {
     val options = listOf("Event", "Club")
@@ -83,6 +90,9 @@ fun CreateScreen(
             }
         }
     }
+
+    // Получаем текущего пользователя из ViewModel
+    val currentUser = authViewModel.user.value
 
     MainScaffold(
         title = "Create",
@@ -211,30 +221,6 @@ fun CreateScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (activeOption.value == "Event") {
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Event Type",
-                            fontSize = 14.sp,
-                            color = grayText
-                        )
-
-                        eventOptions.forEach { option ->
-                            OptionButton(
-                                text = option,
-                                isActive = option == eventType.value,
-                                onClick = { eventType.value = option }
-                            )
-                        }
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(20.dp))
 
                 CustomTextField(
@@ -248,7 +234,39 @@ fun CreateScreen(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 Button(
-                    onClick = { /* TODO: Handle event creation */ },
+                    onClick = {
+                        if (title.value.isBlank() || category.value.isBlank() ||
+                            location.value.isBlank() || description.value.isBlank() ||
+                            selectedDate.value == "Select Date" || currentUser == null
+                        ) {
+                            // TODO: Show an error message
+                        } else {
+                            eventViewModel.createEvent(
+                                name = title.value,
+                                description = description.value,
+                                category = category.value,
+                                eventPicture = imageBase64.value,
+                                isClosed = eventType.value == "Closed",
+                                location = location.value,
+                                startDate = parseDate(selectedDate.value),
+                                creator = Creator(
+                                    id = currentUser.id,
+                                    name = currentUser.name,
+                                    surname = currentUser.surname,
+                                    username = currentUser.username,
+                                    rating = null
+                                ),
+                                onSuccess = {
+                                    navController.navigate("main") {
+                                        popUpTo("main") {inclusive = false}
+                                    }
+                                },
+                                onError = {
+                                    Log.d("EventViewModel", it)
+                                }
+                            )
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = secondaryColor),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
@@ -283,4 +301,16 @@ fun cropCenter(bitmap: Bitmap): Bitmap {
     val yOffset = (height - newSize) / 2
 
     return Bitmap.createBitmap(bitmap, xOffset, yOffset, newSize, newSize)
+}
+
+fun parseDate(dateStr: String): Date {
+    val parts = dateStr.split("/")
+    val day = parts[0].toInt()
+    val month = parts[1].toInt() - 1
+    val year = parts[2].toInt()
+
+    val calendar = Calendar.getInstance()
+    calendar.set(year, month, day)
+
+    return calendar.time
 }

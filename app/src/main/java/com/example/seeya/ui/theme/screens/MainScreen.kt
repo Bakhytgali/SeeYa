@@ -70,9 +70,6 @@ fun MainScreen(
         startDate = Calendar.getInstance().apply {
             set(2025, Calendar.APRIL, 10, 18, 0)
         }.time,
-        endDate = Calendar.getInstance().apply {
-            set(2025, Calendar.APRIL, 10, 22, 0)
-        }.time,
         createdAt = Calendar.getInstance().time
     )
 
