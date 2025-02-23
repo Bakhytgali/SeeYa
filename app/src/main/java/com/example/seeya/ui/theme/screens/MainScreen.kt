@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,14 +30,15 @@ import com.example.seeya.ui.theme.bgColor
 import com.example.seeya.ui.theme.components.EventCard
 import com.example.seeya.ui.theme.components.FilterButton
 import com.example.seeya.ui.theme.components.MainScaffold
+import com.example.seeya.viewmodel.auth.AuthViewModel
 import java.util.Calendar
 
 @Composable
 fun MainScreen(
     navController: NavController,
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
-
     val filters = listOf("For You", "Popular", "By You")
     var activeFilter by remember {
         mutableStateOf(filters[0])
@@ -51,7 +54,8 @@ fun MainScreen(
     val participant = Participant(
         id = "something",
         name = "Rakhat",
-        surname = "Bakhytgali"
+        surname = "Bakhytgali",
+        username = "SOMETHINNNNGGGG"
     )
 
     val sampleEvent = Event(
@@ -97,6 +101,22 @@ fun MainScreen(
                     .fillMaxHeight(),
                 verticalArrangement = Arrangement.Top
             ) {
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                TextButton(
+                    onClick = {
+                        authViewModel.logout()
+
+                        navController.navigate("login") {
+                            popUpTo(0)
+                        }
+                    }
+                ) {
+                    Text(
+                        text = "Log Out"
+                    )
+                }
 
                 // Row Of Event Filtering Buttons
                 Spacer(modifier = Modifier.height(20.dp))
