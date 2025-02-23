@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "main") {
+    NavHost(navController = navController, startDestination = "login") {
         composable("authorize") { AuthorizeScreen(navController, authViewModel) }
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController) }
