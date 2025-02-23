@@ -77,7 +77,7 @@ fun CreateScreen(
 
     MainScaffold(
         title = "Create",
-        showBottomBar = false
+        navController = navController
     ) { mod ->
         Box(
             contentAlignment = Alignment.Center,

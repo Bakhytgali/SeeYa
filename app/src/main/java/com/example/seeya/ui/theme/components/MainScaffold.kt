@@ -2,6 +2,7 @@ package com.example.seeya.ui.theme.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.seeya.R
 import com.example.seeya.ui.theme.Unbounded
 import com.example.seeya.ui.theme.bgColor
@@ -39,14 +41,14 @@ import com.example.seeya.ui.theme.secondaryColor
 @Composable
 fun MainScaffold(
     title: String,
-    modifier: Modifier = Modifier,
-    showBottomBar: Boolean = true,
+    navController: NavController,
     content: @Composable (Modifier) -> Unit
 ) {
     Scaffold(
         topBar = {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(bgColor),
                 contentAlignment = Alignment.Center
             ) {
@@ -104,11 +106,41 @@ fun MainScaffold(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BottomBarItem(R.drawable.home_icon, "Home")
-                        BottomBarItem(R.drawable.clubs_icon, "Clubs")
-                        BottomBarItem(R.drawable.add_icon, "Add")
-                        BottomBarItem(R.drawable.search_icon, "Search")
-                        BottomBarItem(R.drawable.profile_icon, "Profile")
+                        BottomBarItem(
+                            R.drawable.home_icon,
+                            label = "Home",
+                            navigate = {
+                                navController.navigate("main")
+                            }
+                        )
+                        BottomBarItem(
+                            R.drawable.clubs_icon,
+                            label = "Clubs",
+                            navigate = {
+
+                            }
+                        )
+                        BottomBarItem(
+                            R.drawable.add_icon,
+                            label = "Add",
+                            navigate = {
+                                navController.navigate("create")
+                            }
+                        )
+                        BottomBarItem(
+                            R.drawable.search_icon,
+                            label = "Search",
+                            navigate = {
+
+                            }
+                        )
+                        BottomBarItem(
+                            R.drawable.profile_icon,
+                            label = "Profile",
+                            navigate = {
+
+                            }
+                        )
                     }
                 }
             }
@@ -120,10 +152,17 @@ fun MainScaffold(
 
 
 @Composable
-fun BottomBarItem(iconRes: Int, label: String) {
+fun BottomBarItem(
+    iconRes: Int,
+    label: String,
+    navigate: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.clickable {
+            navigate()
+        }
     ) {
         Image(
             painter = painterResource(iconRes),

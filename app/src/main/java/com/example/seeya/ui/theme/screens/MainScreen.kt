@@ -81,7 +81,10 @@ fun MainScreen(
         sampleEvent
     )
 
-    MainScaffold(title = "Events") { mod ->
+    MainScaffold(
+        title = "Events",
+        navController = navController
+    ) { mod ->
         Box(
             modifier = mod
                 .fillMaxSize()
