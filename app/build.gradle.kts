@@ -51,6 +51,9 @@ android {
 
 dependencies {
 
+    // Coil for Images
+    implementation(libs.coil.compose)
+    
     // Compose Navigation
     implementation(libs.androidx.navigation.compose)
 

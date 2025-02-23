@@ -111,7 +111,7 @@ fun MainScaffold(
                             label = "Home",
                             navigate = {
                                 navController.navigate("main") {
-                                    popUpTo("main") {inclusive = false}
+                                    popUpTo(navController.graph.startDestinationId) {inclusive = false}
                                     launchSingleTop = true
                                 }
                             }
