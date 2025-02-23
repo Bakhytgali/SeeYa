@@ -110,7 +110,10 @@ fun MainScaffold(
                             R.drawable.home_icon,
                             label = "Home",
                             navigate = {
-                                navController.navigate("main")
+                                navController.navigate("main") {
+                                    popUpTo("main") {inclusive = false}
+                                    launchSingleTop = true
+                                }
                             }
                         )
                         BottomBarItem(
@@ -124,7 +127,10 @@ fun MainScaffold(
                             R.drawable.add_icon,
                             label = "Add",
                             navigate = {
-                                navController.navigate("create")
+                                navController.navigate("create") {
+                                    popUpTo("main") { inclusive = false }
+                                    launchSingleTop = true
+                                }
                             }
                         )
                         BottomBarItem(

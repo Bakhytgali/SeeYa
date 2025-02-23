@@ -15,6 +15,7 @@ import com.example.seeya.ui.theme.screens.AuthorizeScreen
 import com.example.seeya.ui.theme.screens.CreateScreen
 import com.example.seeya.ui.theme.screens.LoginScreen
 import com.example.seeya.ui.theme.screens.MainScreen
+import com.example.seeya.utils.TokenManager
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModelFactory
 
@@ -38,12 +39,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun AppNavigation(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login") {
+    val startDestination = if (!TokenManager.getToken(authViewModel.getApplication()).isNullOrEmpty()) {
+        "main"
+    } else {
+        "login"
+    }
+
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("authorize") { AuthorizeScreen(navController, authViewModel) }
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController) }

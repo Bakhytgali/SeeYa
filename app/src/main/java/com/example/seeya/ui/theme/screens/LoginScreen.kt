@@ -175,7 +175,7 @@ fun LoginScreen(
                             password.value,
                             onSuccess = {
                                 navController.navigate("main") {
-                                    popUpTo("login") {inclusive = true}
+                                    popUpTo(0) { inclusive = true }
                                 }
                             }
                         )
