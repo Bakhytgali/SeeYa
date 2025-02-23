@@ -63,4 +63,21 @@ class EventViewModel(application: Application, private val repository: EventRepo
             }
         }
     }
+
+    fun getMyEvents(
+        onSuccess: (List<Event>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val response = repository.getMyEvents()
+
+            if(response?.isSuccessful == true) {
+                response.body()?.let { events ->
+                    onSuccess(events)
+                } ?: onError("Empty response from the server")
+            } else {
+                onError("Failed to fetch your events: ${response?.message()  ?: "Unknown Error"}")
+            }
+        }
+    }
 }

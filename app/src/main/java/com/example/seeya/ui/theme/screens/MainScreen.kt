@@ -48,10 +48,21 @@ fun MainScreen(
     // ALL EVENTS
     val events = remember { mutableStateOf<List<Event>>(emptyList()) }
 
+    val myEvents = remember { mutableStateOf<List<Event>>(emptyList()) }
+
     LaunchedEffect(Unit) {
         eventViewModel.getAllEvents(
             onSuccess = { fetchedEvents ->
                 events.value = fetchedEvents
+            },
+            onError = { error ->
+                Log.d("MainScreen", error)
+            }
+        )
+
+        eventViewModel.getMyEvents(
+            onSuccess = { fetchedEvents ->
+                myEvents.value = fetchedEvents
             },
             onError = { error ->
                 Log.d("MainScreen", error)
@@ -116,12 +127,22 @@ fun MainScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(events.value) { event ->
-                        EventCard(
-                            event = event,
-                            modifier = modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(15.dp))
+                    if(activeFilter == "For You") {
+                        items(events.value) { event ->
+                            EventCard(
+                                event = event,
+                                modifier = modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(15.dp))
+                        }
+                    } else if (activeFilter == "By You") {
+                        items(myEvents.value) { event ->
+                            EventCard(
+                                event = event,
+                                modifier = modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(15.dp))
+                        }
                     }
                 }
             }

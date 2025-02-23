@@ -34,5 +34,8 @@ interface APIService {
         // GET ALL EVENTS
         @GET("events/")
         suspend fun getAllEvents(): Response<List<Event>>
+
+        @GET("events/user")
+        suspend fun getMyEvents(@Header("Authorization") token: String): Response<List<Event>>
     }
 }
