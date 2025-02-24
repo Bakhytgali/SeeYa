@@ -80,7 +80,7 @@ fun EventTitleCard(
 
             Text(
                 text = event.name,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 fontFamily = Unbounded,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
