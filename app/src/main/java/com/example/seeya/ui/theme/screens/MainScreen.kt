@@ -146,6 +146,7 @@ fun MainScreen(
                                 modifier = modifier.fillMaxWidth()
                                     .clickable {
                                         navController.navigate("event/${event.eventId}")
+                                        Log.d("EventClicker", event.toString())
                                     }
                             )
                             Spacer(modifier = Modifier.height(15.dp))
