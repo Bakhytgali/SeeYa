@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -53,7 +54,7 @@ fun EventTitleCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 8.dp)
+                .padding(horizontal = 10.dp, vertical = 15.dp)
         ) {
             if(!event.eventPicture.isNullOrEmpty()) {
                 event.eventPicture.let {base64 ->
@@ -61,11 +62,15 @@ fun EventTitleCard(
 
                     bitmap.let {
                         if (it != null) {
-                            Image(
-                                bitmap = it.asImageBitmap(),
-                                contentDescription = "Event Picture",
-                                modifier = Modifier.size(100.dp)
-                            )
+                            Card (
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Image(
+                                    bitmap = it.asImageBitmap(),
+                                    contentDescription = "Event Picture",
+                                    modifier = Modifier.size(150.dp),
+                                )
+                            }
                         }
                     }
                 }

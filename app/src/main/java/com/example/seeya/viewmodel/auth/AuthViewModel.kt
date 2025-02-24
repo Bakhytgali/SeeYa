@@ -43,9 +43,17 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         }
     }
 
-    fun register(name: String, surname: String, email: String, password: String, username: String) {
+    fun register(
+        name: String,
+        surname: String,
+        email: String,
+        password: String,
+        username: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
-            val message = repository.registerUser(
+            val response = repository.registerUser(
                 SignInRequest(
                     name = name,
                     surname = surname,
@@ -55,14 +63,14 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
                 )
             )
 
-            if (message != null) {
-                Log.d("AuthViewModel", message)
+            if (!response.isNullOrEmpty()) {
+                Log.d("AuthViewModel", "Registration successful: $response")
+                onSuccess()
             } else {
                 Log.e("AuthViewModel", "Registration Failed!")
+                onError("Registration failed. Please try again.")
             }
         }
-
-
     }
 
     private fun loadUserFromPrefs() {

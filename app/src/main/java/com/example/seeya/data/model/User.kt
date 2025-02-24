@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import java.util.Date
 
 data class User(
-    @SerializedName("_id") val id: String,
+    @SerializedName("id") val id: String? = null,
     var name: String,
     var surname: String,
     val email: String,

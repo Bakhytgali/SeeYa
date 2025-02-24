@@ -1,6 +1,7 @@
 package com.example.seeya.ui.theme.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,11 +46,13 @@ import com.example.seeya.ui.theme.secondaryColor
 import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
-fun AuthorizeScreen(
+fun RegisterScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     val email = remember {
         mutableStateOf("")
     }
@@ -69,7 +73,7 @@ fun AuthorizeScreen(
     }
 
     val openAlertDialog = remember {
-        mutableStateOf(true)
+        mutableStateOf(false)
     }
 
     Box(
@@ -86,21 +90,22 @@ fun AuthorizeScreen(
                 .fillMaxWidth(0.9f)
         ) {
 
-            /*
-                if(openAlertDialog.value) {
+            if (openAlertDialog.value) {
                 Dialog(
                     openAlertDialog = openAlertDialog,
                     onConfirm = {
                         openAlertDialog.value = true
+                        navController.navigate("login") {
+                            popUpTo(0)
+                        }
                     },
                     onDismiss = {
                         openAlertDialog.value = true
                     },
-                    dialogText = "Confirm that you are gay",
-                    dialogTitle = "Confirm"
+                    dialogText = "You'll be directed to the Login page where you can enter your credentials and authorize",
+                    dialogTitle = "Successfully Registered"
                 )
             }
-             */
 
             // SeeYa Logo
             Image(
@@ -218,7 +223,13 @@ fun AuthorizeScreen(
                             surname = surname.value,
                             email = email.value,
                             password = password.value,
-                            username = username.value
+                            username = username.value,
+                            onSuccess =  {
+                                openAlertDialog.value = true
+                            },
+                            onError = {
+                                Toast.makeText(context, "Successfully joined!", Toast.LENGTH_SHORT).show()
+                            }
                         )
                         Log.d("AuthorizeScreen", "Authorizing for ${email.value}...")
                     }
@@ -250,7 +261,9 @@ fun AuthorizeScreen(
 
                 TextButton(
                     onClick = {
-                        // TODO
+                        navController.navigate("login") {
+                            popUpTo(0)
+                        }
                     },
                     modifier = Modifier.padding(0.dp)
                 ) {

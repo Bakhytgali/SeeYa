@@ -209,7 +209,9 @@ fun LoginScreen(
 
                 TextButton(
                     onClick = {
-                        // TODO
+                        navController.navigate("register") {
+                            popUpTo(0)
+                        }
                     },
                     modifier = Modifier.padding(0.dp)
                 ) {

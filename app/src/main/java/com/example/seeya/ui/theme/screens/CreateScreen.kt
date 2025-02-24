@@ -250,7 +250,7 @@ fun CreateScreen(
                                 location = location.value,
                                 startDate = parseDate(selectedDate.value),
                                 creator = Creator(
-                                    id = user.id,
+                                    id = user.id!!,
                                     name = user.name,
                                     surname = user.surname,
                                     username = user.username,

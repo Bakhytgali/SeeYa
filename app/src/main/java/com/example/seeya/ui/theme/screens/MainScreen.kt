@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.seeya.data.model.Event
@@ -31,6 +32,7 @@ import com.example.seeya.ui.theme.bgColor
 import com.example.seeya.ui.theme.components.EventCard
 import com.example.seeya.ui.theme.components.FilterButton
 import com.example.seeya.ui.theme.components.MainScaffold
+import com.example.seeya.utils.TokenManager
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.event.EventViewModel
 
@@ -50,6 +52,11 @@ fun MainScreen(
     val events = remember { mutableStateOf<List<Event>>(emptyList()) }
 
     val myEvents = remember { mutableStateOf<List<Event>>(emptyList()) }
+
+    val context = LocalContext.current
+    val user = TokenManager.getUser(context)
+
+    Log.d("MainScreen", "User: ${user.toString()}")
 
     LaunchedEffect(Unit) {
         eventViewModel.getAllEvents(
@@ -129,7 +136,7 @@ fun MainScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if(activeFilter == "For You") {
-                        items(events.value) { event ->
+                        items(events.value.reversed()) { event ->
                             EventCard(
                                 event = event,
                                 modifier = modifier.fillMaxWidth()
@@ -140,7 +147,7 @@ fun MainScreen(
                             Spacer(modifier = Modifier.height(15.dp))
                         }
                     } else if (activeFilter == "By You") {
-                        items(myEvents.value) { event ->
+                        items(myEvents.value.reversed()) { event ->
                             EventCard(
                                 event = event,
                                 modifier = modifier.fillMaxWidth()

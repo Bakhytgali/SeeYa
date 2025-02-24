@@ -39,7 +39,7 @@ interface APIService {
         @GET("events/{eventId}")
         suspend fun getEvent(@Path("eventId") eventId: String): Response<Event>
 
-        @GET("events/user")
+        @GET("users/eventsCreated")
         suspend fun getMyEvents(@Header("Authorization") token: String): Response<List<Event>>
 
         // Join events

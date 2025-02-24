@@ -2,6 +2,7 @@ package com.example.seeya.ui.theme.screens
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,6 +73,7 @@ fun EventScreen(
         Box(
             contentAlignment = Alignment.Center,
             modifier = mod.fillMaxSize()
+                .background(bgColor)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -162,7 +164,7 @@ fun EventScreen(
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(2.dp, secondaryColor),
+                                .border(2.dp, secondaryColor, shape = RoundedCornerShape(10.dp)),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = bgColor
                             )

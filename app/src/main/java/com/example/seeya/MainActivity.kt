@@ -12,7 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.seeya.data.repository.AuthRepository
 import com.example.seeya.data.repository.EventRepository
 import com.example.seeya.ui.theme.SeeYaTheme
-import com.example.seeya.ui.theme.screens.AuthorizeScreen
+import com.example.seeya.ui.theme.screens.RegisterScreen
 import com.example.seeya.ui.theme.screens.CreateScreen
 import com.example.seeya.ui.theme.screens.EventScreen
 import com.example.seeya.ui.theme.screens.LoginScreen
@@ -60,7 +60,7 @@ fun AppNavigation(authViewModel: AuthViewModel, eventViewModel: EventViewModel) 
     }
 
     NavHost(navController = navController, startDestination = startDestination) {
-        composable("authorize") { AuthorizeScreen(navController, authViewModel) }
+        composable("register") { RegisterScreen(navController, authViewModel) }
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController, eventViewModel, authViewModel) }
         composable("create") { CreateScreen(navController, eventViewModel, authViewModel) }
