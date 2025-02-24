@@ -133,6 +133,9 @@ fun MainScreen(
                             EventCard(
                                 event = event,
                                 modifier = modifier.fillMaxWidth()
+                                    .clickable {
+                                        navController.navigate("event/${event.eventId}")
+                                    }
                             )
                             Spacer(modifier = Modifier.height(15.dp))
                         }

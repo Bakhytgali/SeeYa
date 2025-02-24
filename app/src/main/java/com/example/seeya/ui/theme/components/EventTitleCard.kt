@@ -126,7 +126,8 @@ fun EventExample(modifier: Modifier = Modifier) {
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
         ),
-        createdAt = Date()
+        createdAt = Date(),
+        eventId = "EventId"
     )
 
     EventTitleCard(event)
