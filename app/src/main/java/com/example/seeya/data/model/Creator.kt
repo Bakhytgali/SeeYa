@@ -1,7 +1,9 @@
 package com.example.seeya.data.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Creator(
-    val id: String,
+    @SerializedName("_id")val id: String,
     val name: String,
     val surname: String,
     val rating: Double?,

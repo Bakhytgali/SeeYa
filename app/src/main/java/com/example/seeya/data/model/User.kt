@@ -1,9 +1,10 @@
 package com.example.seeya.data.model
 
+import com.google.gson.annotations.SerializedName
 import java.util.Date
 
 data class User(
-    val id: String,
+    @SerializedName("_id") val id: String,
     var name: String,
     var surname: String,
     val email: String,
