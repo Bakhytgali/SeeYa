@@ -3,6 +3,7 @@ package com.example.seeya.data.model
 import java.util.Date
 
 data class Event(
+    val eventId: String,
     val name: String,
     val description: String,
     val category: String,
