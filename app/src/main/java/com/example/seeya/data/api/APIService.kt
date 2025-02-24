@@ -43,7 +43,7 @@ interface APIService {
         suspend fun getMyEvents(@Header("Authorization") token: String): Response<List<Event>>
 
         // Join events
-        @POST("events/join/{eventId}")
+        @POST("users/join/{eventId}")
         suspend fun joinEvent(@Header("Authorization") token: String, @Path("eventId") eventId: String): Response<Unit>
     }
 }
