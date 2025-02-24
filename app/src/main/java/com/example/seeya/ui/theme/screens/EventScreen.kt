@@ -50,15 +50,17 @@ fun EventScreen(
     val event = remember { mutableStateOf<Event?>(null) }
     val context = LocalContext.current
 
-    // Загружаем ивент при открытии экрана
+    Log.d("EventScreen", "Opening event screen for eventId: $eventId")
+
     LaunchedEffect(Unit) {
         eventViewModel.getEvent(
             eventId,
             onSuccess = { fetchedEvent ->
+                Log.d("EventScreen", "Event loaded successfully: $fetchedEvent")
                 event.value = fetchedEvent
             },
-            onError = {
-                Log.e("Event Screen", "Failed to fetch an event!")
+            onError = { errorMsg ->
+                Log.e("EventScreen", "Failed to fetch an event! Error: $errorMsg")
             }
         )
     }
@@ -87,25 +89,41 @@ fun EventScreen(
                     Spacer(modifier = Modifier.height(30.dp))
 
                     val currentUser = TokenManager.getUser(context)
-                    val isUserParticipating = currentEvent.participants?.any { it.id == currentUser?.id } == true
+                    Log.d("EventScreen", "Current user: $currentUser")
+
+                    Log.d(
+                        "EventScreen",
+                        "Participants: ${currentEvent.participants?.map { it.id }}"
+                    )
+
+                    val isUserParticipating =
+                        currentEvent.participants?.any { it.id == currentUser?.id } == true
+                    Log.d("EventScreen", "Is user participating? $isUserParticipating")
 
                     if (!isUserParticipating) {
                         Button(
                             onClick = {
+                                Log.d("EventScreen", "User attempting to join event: ${currentEvent.eventId}")
+
                                 eventViewModel.joinEvent(
                                     eventId = currentEvent.eventId,
                                     onSuccess = {
+                                        Log.d("EventScreen", "Successfully joined event!")
                                         Toast.makeText(context, "Successfully joined!", Toast.LENGTH_SHORT).show()
 
                                         eventViewModel.getEvent(
                                             eventId,
                                             onSuccess = { updatedEvent ->
+                                                Log.d("EventScreen", "Event updated after joining: $updatedEvent")
                                                 event.value = updatedEvent
                                             },
-                                            onError = { Log.e("Event Screen", "Failed to refresh event!") }
+                                            onError = { errorMsg ->
+                                                Log.e("EventScreen", "Failed to refresh event! Error: $errorMsg")
+                                            }
                                         )
                                     },
                                     onError = { errorMsg ->
+                                        Log.e("EventScreen", "Failed to join event! Error: $errorMsg")
                                         Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                                     }
                                 )
@@ -128,17 +146,18 @@ fun EventScreen(
                     } else {
                         Button(
                             onClick = {
-                                // TODO
+                                Log.d("EventScreen", "User is already participating in the event.")
                             },
                             shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .border(2.dp, secondaryColor),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = bgColor
                             )
                         ) {
                             Text(
-                                text = "Participate",
+                                text = "You're Participating",
                                 fontFamily = Unbounded,
                                 fontWeight = FontWeight.Bold,
                                 color = secondaryColor,
@@ -157,3 +176,4 @@ fun EventScreen(
         }
     }
 }
+
