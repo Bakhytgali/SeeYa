@@ -64,7 +64,7 @@ fun AppNavigation(authViewModel: AuthViewModel, eventViewModel: EventViewModel) 
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController, eventViewModel, authViewModel) }
         composable("create") { CreateScreen(navController, eventViewModel, authViewModel) }
-        composable("event") { backStackEntry ->
+        composable("event/{eventId}") { backStackEntry ->
             val eventId = backStackEntry.arguments?.getString("eventId")
             if (eventId != null) {
                 EventScreen(navController, eventId, eventViewModel)
