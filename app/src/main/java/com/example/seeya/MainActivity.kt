@@ -14,6 +14,7 @@ import com.example.seeya.data.repository.EventRepository
 import com.example.seeya.ui.theme.SeeYaTheme
 import com.example.seeya.ui.theme.screens.AuthorizeScreen
 import com.example.seeya.ui.theme.screens.CreateScreen
+import com.example.seeya.ui.theme.screens.EventScreen
 import com.example.seeya.ui.theme.screens.LoginScreen
 import com.example.seeya.ui.theme.screens.MainScreen
 import com.example.seeya.utils.TokenManager
@@ -63,5 +64,11 @@ fun AppNavigation(authViewModel: AuthViewModel, eventViewModel: EventViewModel) 
         composable("login") { LoginScreen(navController, authViewModel) }
         composable("main") { MainScreen(navController, eventViewModel, authViewModel) }
         composable("create") { CreateScreen(navController, eventViewModel, authViewModel) }
+        composable("event") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            if (eventId != null) {
+                EventScreen(navController, eventId, eventViewModel)
+            }
+        }
     }
 }

@@ -37,7 +37,7 @@ class EventRepository(private val context: Context) {
         return try {
             val response: Response<List<Event>> = api.getAllEvents()
 
-            if(response.isSuccessful) {
+            if (response.isSuccessful) {
                 response
             } else {
                 throw Exception("Failed to fetch events: ${response.message()}")
@@ -61,6 +61,42 @@ class EventRepository(private val context: Context) {
                 response
             } else {
                 throw Exception("Failed to fetch your events: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun getEvent(eventId: String): Response<Event>? {
+        return try {
+            val response: Response<Event> = api.getEvent(eventId)
+
+            if (response.isSuccessful) {
+                response
+            } else {
+                throw Exception("Failed to fetch an event!: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun joinEvent(eventId: String): Response<Unit>? {
+        return try {
+            val token = TokenManager.getToken(context)
+
+            if (token.isNullOrEmpty()) {
+                throw Exception("No auth token found.")
+            }
+
+            val response: Response<Unit> = api.joinEvent("Bearer $token", eventId = eventId)
+
+            if (response.isSuccessful) {
+                response
+            } else {
+                throw Exception("Failed to join the event!: ${response.message()}")
             }
         } catch (e: Exception) {
             e.printStackTrace()

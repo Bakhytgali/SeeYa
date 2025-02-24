@@ -12,6 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface APIService {
     interface ApiService {
@@ -31,11 +32,18 @@ interface APIService {
 
 
 
-        // GET ALL EVENTS
+        // GET EVENTS
         @GET("events/")
         suspend fun getAllEvents(): Response<List<Event>>
 
+        @GET("events/{eventId}")
+        suspend fun getEvent(@Path("eventId") eventId: String): Response<Event>
+
         @GET("events/user")
         suspend fun getMyEvents(@Header("Authorization") token: String): Response<List<Event>>
+
+        // Join events
+        @POST("events/{eventId}/participate")
+        suspend fun joinEvent(@Header("Authorization") token: String, @Path("eventId") eventId: String): Response<Unit>
     }
 }

@@ -3,6 +3,7 @@ package com.example.seeya.viewmodel.event
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
@@ -77,6 +78,40 @@ class EventViewModel(application: Application, private val repository: EventRepo
                 } ?: onError("Empty response from the server")
             } else {
                 onError("Failed to fetch your events: ${response?.message()  ?: "Unknown Error"}")
+            }
+        }
+    }
+
+    fun getEvent(
+        eventId: String,
+        onSuccess: (Event) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val response = repository.getEvent(eventId)
+
+            if(response?.isSuccessful == true) {
+                response.body()?.let {event ->
+                    onSuccess(event)
+                } ?: onError("Empty response from the server")
+            } else {
+                onError("Failed to fetch an event!: ${response?.message() ?: "Unknown Error"}")
+            }
+        }
+    }
+
+    fun joinEvent(
+        eventId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val response = repository.joinEvent(eventId = eventId)
+
+            if(response?.isSuccessful == true) {
+                onSuccess()
+            } else {
+                onError("Failed to join the event!: ${response?.message() ?: "Unknown Error"}")
             }
         }
     }
