@@ -2,6 +2,8 @@ package com.example.seeya.viewmodel.event
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.seeya.data.model.CreateEventRequest
@@ -13,6 +15,18 @@ import java.util.Date
 
 class EventViewModel(application: Application, private val repository: EventRepository) :
     AndroidViewModel(application) {
+
+    private val _event = MutableLiveData<Event?>()
+    val event: LiveData<Event?> = _event
+
+    private fun loadEvent(eventId: String) {
+        viewModelScope.launch {
+            val response = repository.getEvent(eventId)
+            if (response?.isSuccessful == true) {
+                _event.postValue(response.body())
+            }
+        }
+    }
 
     fun createEvent(
         name: String,
@@ -92,6 +106,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
 
             if(response?.isSuccessful == true) {
                 response.body()?.let {event ->
+                    loadEvent(eventId)
                     onSuccess(event)
                 } ?: onError("Empty response from the server")
             } else {
@@ -109,6 +124,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
             val response = repository.joinEvent(eventId = eventId)
 
             if(response?.isSuccessful == true) {
+                loadEvent(eventId)
                 onSuccess()
             } else {
                 onError("Failed to join the event!: ${response?.message() ?: "Unknown Error"}")

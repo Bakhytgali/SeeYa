@@ -64,7 +64,7 @@ fun EventTitleCard(
                             Image(
                                 bitmap = it.asImageBitmap(),
                                 contentDescription = "Event Picture",
-                                modifier = Modifier.size(50.dp)
+                                modifier = Modifier.size(100.dp)
                             )
                         }
                     }
