@@ -91,14 +91,25 @@ fun EventScreen(
                     val currentUser = TokenManager.getUser(context)
                     Log.d("EventScreen", "Current user: $currentUser")
 
+                    var eventButtonStatus = remember {
+                        mutableStateOf("")
+                    }
+
                     Log.d(
                         "EventScreen",
                         "Participants: ${currentEvent.participants?.map { it.id }}"
                     )
-
-                    val isUserParticipating =
+                    var isUserParticipating =
                         currentEvent.participants?.any { it.id == currentUser?.id } == true
-                    Log.d("EventScreen", "Is user participating? $isUserParticipating")
+                    eventButtonStatus.value = "You're Participating!"
+
+                    if(!isUserParticipating) {
+                        if(currentEvent.creator.id == currentUser?.id) {
+                            isUserParticipating = true
+                            eventButtonStatus.value = "This Is Your Event"
+                        }
+                    }
+
 
                     if (!isUserParticipating) {
                         Button(
@@ -157,7 +168,7 @@ fun EventScreen(
                             )
                         ) {
                             Text(
-                                text = "You're Participating",
+                                text = eventButtonStatus.value,
                                 fontFamily = Unbounded,
                                 fontWeight = FontWeight.Bold,
                                 color = secondaryColor,
