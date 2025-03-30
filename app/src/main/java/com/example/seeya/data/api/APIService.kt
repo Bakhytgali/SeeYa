@@ -24,13 +24,9 @@ interface APIService {
         @POST("auth/register")
         suspend fun registerUser(@Body request: SignInRequest): Response<SignInResponse>
 
-
-
         // CREATE AN EVENT
         @POST("events/create")
         suspend fun createEvent(@Header("Authorization") token: String, @Body request: CreateEventRequest): Response<CreateEventResponse>
-
-
 
         // GET EVENTS
         @GET("events/")
