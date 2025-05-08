@@ -1,41 +1,38 @@
 package com.example.seeya.ui.theme.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.seeya.ui.theme.Poppins
-import com.example.seeya.ui.theme.grayText
-import com.example.seeya.ui.theme.primaryColor
-import com.example.seeya.ui.theme.primaryContainerColor
-import com.example.seeya.ui.theme.secondaryColor
 
 @Composable
 fun CustomTextField(
-    text: MutableState<String>,
+    text: String,
     placeholder: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     numberOfLines: Int = 1,
-    ) {
+    isActive: Boolean = true,
+    onClick: () -> Unit = {},
+    trailingIcon: (@Composable () -> Unit)? = null,
+    leadingIcon: (@Composable () -> Unit)? = null
+) {
 
     OutlinedTextField(
-        value = text.value,
+        value = text,
         placeholder = {
             Text(
                 text = placeholder,
-                fontSize = 16.sp,
-                fontFamily = Poppins,
-                color = grayText
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondaryContainer
             )
         },
         textStyle = TextStyle(
@@ -45,15 +42,21 @@ fun CustomTextField(
         onValueChange = onValueChange,
         maxLines = numberOfLines,
         shape = RoundedCornerShape(10.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = primaryContainerColor,
-            unfocusedTextColor = primaryColor,
-            focusedTextColor = secondaryColor,
-            focusedIndicatorColor = secondaryColor,
-            unfocusedIndicatorColor = primaryContainerColor,
-            cursorColor = secondaryColor,
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = MaterialTheme.colorScheme.primaryContainer,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            unfocusedTextColor = MaterialTheme.colorScheme.secondaryContainer,
+            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            disabledTextColor = MaterialTheme.colorScheme.onBackground,
         ),
-        modifier = modifier
+        enabled = isActive,
+        modifier = modifier.clickable {
+            onClick()
+        },
+        trailingIcon = trailingIcon,
+        leadingIcon = leadingIcon
     )
 }

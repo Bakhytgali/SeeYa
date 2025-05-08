@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,21 +54,7 @@ fun MainScaffold(
                     .background(bgColor),
                 contentAlignment = Alignment.Center
             ) {
-                TopAppBar(
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                // TODO
-                            }
-                        ) {
-                            Icon(
-                                Icons.Filled.Menu,
-                                contentDescription = "Open Drawer Menu",
-                                tint = primaryColor,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                    },
+                CenterAlignedTopAppBar(
                     title = {
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -74,17 +62,12 @@ fun MainScaffold(
                         ) {
                             Text(
                                 text = title,
-                                fontSize = 28.sp,
-                                fontFamily = Unbounded,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier
-                                    .fillMaxWidth()
+                                style = MaterialTheme.typography.titleSmall,
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = bgColor
+                        containerColor = MaterialTheme.colorScheme.background
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -127,7 +110,7 @@ fun MainScaffold(
                             R.drawable.add_icon,
                             label = "Add",
                             navigate = {
-                                navController.navigate("create") {
+                                navController.navigate("createEvent") {
                                     popUpTo("main") { inclusive = false }
                                     launchSingleTop = true
                                 }
@@ -172,12 +155,8 @@ fun BottomBarItem(
     ) {
         Image(
             painter = painterResource(iconRes),
-            contentDescription = "$label Icon"
-        )
-        Text(
-            text = label,
-            color = secondaryColor,
-            fontSize = 14.sp
+            contentDescription = "$label Icon",
+            modifier = Modifier.size(35.dp)
         )
     }
 }

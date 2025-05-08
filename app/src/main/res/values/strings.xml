@@ -4,4 +4,27 @@
     <string name="login_greet">
         Welcome to SeeYa! Here you can find attend events, meet new people and have fun!
     </string>
+
+    <string name="event_category_meetup_subtitle">
+        Casual gatherings to hang out, share interests, or just have a good time together.
+    </string>
+    <string name="event_category_live_show_subtitle">
+        Public events like concerts, stand-ups, and performances, usually with tickets.
+    </string>
+    <string name="event_category_online_subtitle">
+        Virtual events such as game nights, discussions, or watch parties you can join from anywhere.
+    </string>
+    <string name="event_category_networking_subtitle">
+        Opportunities to meet new people, exchange ideas, or volunteer and grow your circle.
+    </string>
+
+
+    <!-- EVENT TYPES ( OPEN & CLOSED ) -->
+    <string name="event_type_open_description">
+        Anyone can join this event without an invitation or approval.
+    </string>
+
+    <string name="event_type_closed_description">
+        Only approved members can join this event; an invitation or organizer’s approval is required.
+    </string>
 </resources>

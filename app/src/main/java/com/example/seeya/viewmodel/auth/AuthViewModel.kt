@@ -2,6 +2,9 @@ package com.example.seeya.viewmodel.auth
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -21,20 +24,83 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
     private val _token = MutableLiveData<String?>()
     val token: LiveData<String?> = _token
 
-    init {
-        loadUserFromPrefs() // Загружаем сохранённого юзера
+    var loginText by mutableStateOf("")
+        private set
+
+    var loginPassword by mutableStateOf("")
+        private set
+
+    var isError by mutableStateOf(false)
+        private set
+
+    fun onLoginTextChange(newValue: String) {
+        loginText = newValue
     }
 
-    fun login(email: String, password: String, onSuccess: () -> Unit) {
+    fun onLoginPasswordChange(newValue: String) {
+        loginPassword = newValue
+    }
+
+    fun setErrorValue(newValue: Boolean) {
+        isError = newValue
+    }
+
+    var registerEmail by mutableStateOf("")
+        private set
+
+    var registerPassword by mutableStateOf("")
+        private set
+
+    var registerName by mutableStateOf("")
+        private set
+
+    var registerSurname by mutableStateOf("")
+        private set
+
+    var registerUsername by mutableStateOf("")
+        private set
+
+    fun onRegisterEmailChange(newValue: String) {
+        registerEmail = newValue
+    }
+
+    fun onRegisterPasswordChange(newValue: String) {
+        registerPassword = newValue
+    }
+
+    fun onRegisterNameChange(newValue: String) {
+        registerName = newValue
+    }
+
+    fun onRegisterSurnameChange(newValue: String) {
+        registerSurname = newValue
+    }
+
+    fun onRegisterUsernameChange(newValue: String) {
+        registerUsername = newValue
+    }
+
+    var registerDialogIsOpen by mutableStateOf(false)
+        private set
+
+    fun setDialogOpen(newValue: Boolean) {
+        registerDialogIsOpen = newValue
+    }
+
+    init {
+        loadUserFromPrefs()
+    }
+
+    fun login(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val response = repository.loginUser(email, password)
+            val response = repository.loginUser(loginText, loginPassword)
             if (response.isSuccessful) {
                 response.body()?.let { authResponse ->
                     val context = getApplication<Application>().applicationContext
                     TokenManager.saveToken(context, authResponse.token)
                     TokenManager.saveUser(context, authResponse.user)
 
-                    _user.postValue(authResponse.user) // Обновляем UI
+                    _user.postValue(authResponse.user)
                     _token.postValue(authResponse.token)
 
                     onSuccess()
@@ -44,22 +110,17 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
     }
 
     fun register(
-        name: String,
-        surname: String,
-        email: String,
-        password: String,
-        username: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             val response = repository.registerUser(
                 SignInRequest(
-                    name = name,
-                    surname = surname,
-                    username = username,
-                    email = email,
-                    password = password
+                    name = registerName,
+                    surname = registerSurname,
+                    username = registerUsername,
+                    email = registerEmail,
+                    password = registerPassword
                 )
             )
 

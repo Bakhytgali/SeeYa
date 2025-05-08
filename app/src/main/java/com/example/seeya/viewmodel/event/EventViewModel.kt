@@ -1,63 +1,158 @@
 package com.example.seeya.viewmodel.event
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Base64
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.seeya.R
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
 import com.example.seeya.data.repository.EventRepository
+import com.example.seeya.utils.TokenManager
 import kotlinx.coroutines.launch
-import java.util.Date
+import java.io.ByteArrayOutputStream
+import java.time.LocalDateTime
 
 class EventViewModel(application: Application, private val repository: EventRepository) :
     AndroidViewModel(application) {
 
-    private val _event = MutableLiveData<Event?>()
-    val event: LiveData<Event?> = _event
+    private val user = TokenManager.getUser(getApplication())
 
-    private fun loadEvent(eventId: String) {
-        viewModelScope.launch {
-            val response = repository.getEvent(eventId)
-            if (response?.isSuccessful == true) {
-                _event.postValue(response.body())
-            }
+    var event: Event? by mutableStateOf(null)
+        private set
+
+    private fun loadEvent(newEvent: Event) {
+        event = newEvent
+    }
+
+    var eventTitle by mutableStateOf("")
+        private set
+
+    var eventCategory by mutableStateOf("")
+        private set
+
+    var eventTags by mutableStateOf("")
+        private set
+
+    var eventLocation by mutableStateOf("")
+        private set
+
+    var eventDescription by mutableStateOf("")
+        private set
+
+    var eventPicture by mutableStateOf("")
+        private set
+
+    var imageBitmap: Bitmap? by mutableStateOf(null)
+        private set
+
+    var eventTypeValue by mutableStateOf("Open")
+        private set
+    var eventTypeIsOpen by mutableStateOf(true)
+        private set
+
+    var eventStartDate: LocalDateTime? by mutableStateOf(LocalDateTime.now())
+        private set
+
+    fun onEventTitleChange(newValue: String) {
+        eventTitle = newValue
+    }
+
+    fun onEventCategoryChange(newValue: String) {
+        eventCategory = newValue
+    }
+
+    fun onEventLocationChange(newValue: String) {
+        eventLocation = newValue
+    }
+
+    fun onEventDescriptionChange(newValue: String) {
+        eventDescription = newValue
+    }
+
+    private fun setNewEventPicture(pictureUrl: String?) {
+        eventPicture = pictureUrl ?: ""
+    }
+
+    fun onNewEventCategory(newValue: String) {
+        eventCategory = newValue
+    }
+
+    fun setEventType(newValue: String) {
+        eventTypeValue = newValue
+        eventTypeIsOpen = newValue == "Open"
+    }
+
+    fun setNewEventStartDate(dateTime: LocalDateTime) {
+        eventStartDate = dateTime
+    }
+
+    fun onNewEventTags(newValue: String) {
+        eventTags = newValue
+    }
+
+    fun handleImageUri(uri: Uri) {
+        val contentResolver = getApplication<Application>().contentResolver
+        val inputStream = contentResolver.openInputStream(uri)
+        val bytes = inputStream?.readBytes()
+
+        inputStream?.close()
+
+        if(bytes != null) {
+            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            imageBitmap = bitmap
+            setNewEventPicture(encodeToBase64(bitmap))
         }
     }
 
+    private fun encodeToBase64(bitmap: Bitmap): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+    }
+
     fun createEvent(
-        name: String,
-        description: String,
-        category: String,
-        eventPicture: String?,
-        isClosed: Boolean,
-        location: String,
-        startDate: Date,
-        creator: Creator,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        viewModelScope.launch {
-            val newEvent = CreateEventRequest(
-                name = name,
-                description = description,
-                category = category,
-                eventPicture = eventPicture,
-                isOpen = isClosed,
-                creator = creator,
-                location = location,
-                startDate = startDate,
+        if (user != null) {
+            val userCreator = Creator(
+                id = user.id!!,
+                name = user.name,
+                surname = user.surname,
+                username = user.username,
+                rating = null
             )
 
-            val response = repository.createEvent(newEvent)
+            viewModelScope.launch {
+                val newEvent = CreateEventRequest(
+                    name = eventTitle,
+                    description = eventDescription,
+                    category = eventCategory,
+                    eventPicture = eventPicture,
+                    isOpen = eventTypeIsOpen,
+                    creator = userCreator,
+                    location = eventLocation,
+                    startDate = eventStartDate!!,
+                )
 
-            if (response?.isSuccessful == true) {
-                onSuccess()
-            } else {
-                onError("Failed to create event: ${response?.message() ?: "Unknown error"}")
+                val response = repository.createEvent(newEvent)
+
+                if (response?.isSuccessful == true) {
+                    onSuccess()
+                } else {
+                    onError("Failed to create event: ${response?.message() ?: "Unknown error"}")
+                }
             }
         }
     }
@@ -86,12 +181,12 @@ class EventViewModel(application: Application, private val repository: EventRepo
         viewModelScope.launch {
             val response = repository.getMyEvents()
 
-            if(response?.isSuccessful == true) {
+            if (response?.isSuccessful == true) {
                 response.body()?.let { events ->
                     onSuccess(events)
                 } ?: onError("Empty response from the server")
             } else {
-                onError("Failed to fetch your events: ${response?.message()  ?: "Unknown Error"}")
+                onError("Failed to fetch your events: ${response?.message() ?: "Unknown Error"}")
             }
         }
     }
@@ -104,9 +199,9 @@ class EventViewModel(application: Application, private val repository: EventRepo
         viewModelScope.launch {
             val response = repository.getEvent(eventId)
 
-            if(response?.isSuccessful == true) {
-                response.body()?.let {event ->
-                    loadEvent(eventId)
+            if (response?.isSuccessful == true) {
+                response.body()?.let { event ->
+                    loadEvent(event)
                     onSuccess(event)
                 } ?: onError("Empty response from the server")
             } else {
@@ -123,12 +218,22 @@ class EventViewModel(application: Application, private val repository: EventRepo
         viewModelScope.launch {
             val response = repository.joinEvent(eventId = eventId)
 
-            if(response?.isSuccessful == true) {
-                loadEvent(eventId)
+            if (response?.isSuccessful == true) {
                 onSuccess()
             } else {
                 onError("Failed to join the event!: ${response?.message() ?: "Unknown Error"}")
             }
         }
+    }
+
+    fun clearEntries() {
+        eventTitle = ""
+        eventDescription = ""
+        eventLocation = ""
+        eventTags = ""
+        eventCategory = ""
+        setEventType("Open")
+        eventPicture = ""
+        imageBitmap = null
     }
 }

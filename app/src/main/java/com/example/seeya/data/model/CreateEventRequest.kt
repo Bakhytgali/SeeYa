@@ -1,6 +1,6 @@
 package com.example.seeya.data.model
 
-import java.util.Date
+import java.time.LocalDateTime
 
 data class CreateEventRequest(
     val creator: Creator,
@@ -10,6 +10,6 @@ data class CreateEventRequest(
     val location: String,
     val eventPicture: String?,
     val isOpen: Boolean,
-    val startDate: Date
+    val startDate: LocalDateTime
 )
 

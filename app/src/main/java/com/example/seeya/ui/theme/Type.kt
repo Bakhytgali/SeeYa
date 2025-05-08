@@ -20,5 +20,45 @@ val Unbounded = FontFamily(
 )
 
 val SeeYaTypography = Typography(
-    bodyLarge = TextStyle(fontFamily = Poppins, fontSize = 16.sp, color = primaryColor),
+    bodyLarge = TextStyle(
+        fontFamily = Poppins,
+        fontSize = 20.sp,
+        color = primaryColor,
+        fontWeight = FontWeight.Normal
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = Poppins,
+        fontSize = 16.sp,
+        color = primaryColor,
+        fontWeight = FontWeight.Normal
+    ),
+    bodySmall = TextStyle(
+        fontFamily = Poppins,
+        fontSize = 12.sp,
+        color = primaryColor,
+        fontWeight = FontWeight.Normal
+    ),
+    titleLarge = TextStyle(
+        fontFamily = Unbounded,
+        fontSize = 48.sp,
+        color = primaryColor,
+        fontWeight = FontWeight.Bold
+    ),
+    titleMedium = TextStyle(
+        fontFamily = Unbounded,
+        fontSize = 28.sp,
+        color = primaryColor,
+        fontWeight = FontWeight.Bold
+    ),
+    titleSmall = TextStyle(
+        fontFamily = Unbounded,
+        fontSize = 22.sp,
+        color = primaryColor,
+        fontWeight = FontWeight.Normal
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = Unbounded,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Normal,
+    )
 )

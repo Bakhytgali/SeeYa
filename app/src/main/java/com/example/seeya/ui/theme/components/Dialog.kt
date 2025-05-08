@@ -7,7 +7,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -18,14 +17,14 @@ import com.example.seeya.ui.theme.secondaryColor
 
 @Composable
 fun Dialog(
-    openAlertDialog: MutableState<Boolean>,
+    openAlertDialog: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     dialogTitle: String,
     dialogText: String,
     modifier: Modifier = Modifier
 ) {
-    if (openAlertDialog.value) {
+    if (openAlertDialog) {
         AlertDialog(
             onDismissRequest = { onDismiss() },
             title = {
@@ -57,7 +56,7 @@ fun Dialog(
                 TextButton(
                     onClick = {
                         onConfirm()
-                        openAlertDialog.value = false
+                            // openAlertDialog = false
                     }
                 ) {
                     Text("Login", fontFamily = Poppins)

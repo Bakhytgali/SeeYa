@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,6 +19,8 @@ import androidx.navigation.NavController
 import com.example.seeya.R
 import com.example.seeya.ui.theme.*
 import com.example.seeya.ui.theme.components.CustomTextField
+import com.example.seeya.ui.theme.components.CustomTitleButton
+import com.example.seeya.ui.theme.components.SeeYaLogo
 import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
@@ -27,15 +28,11 @@ fun LoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val isError = remember { mutableStateOf(false) }
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(bgColor),
+            .background(MaterialTheme.colorScheme.background),
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -44,28 +41,20 @@ fun LoginScreen(
                 .fillMaxHeight()
                 .fillMaxWidth(0.9f)
         ) {
-            // SeeYa Logo
-            Image(
-                painter = painterResource(R.drawable.seeya_logo_mono),
-                contentDescription = "SeeYa Logo",
-                modifier = Modifier.size(90.dp)
-            )
+            SeeYaLogo()
 
             Spacer(modifier = Modifier.height(30.dp))
 
             Text(
                 text = "Sign In",
-                fontSize = 32.sp,
-                color = primaryColor,
-                fontFamily = Unbounded,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = stringResource(R.string.login_greet),
-                fontSize = 16.sp,
+                text = "Welcome back!",
+                style = MaterialTheme.typography.bodyMedium,
                 color = primaryColor,
                 textAlign = TextAlign.Center
             )
@@ -78,7 +67,7 @@ fun LoginScreen(
                 },
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryContainerColor
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -97,9 +86,8 @@ fun LoginScreen(
 
                     Text(
                         text = "Google",
-                        fontFamily = Unbounded,
-                        color = grayText,
-                        fontSize = 20.sp
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                     )
                 }
             }
@@ -108,19 +96,18 @@ fun LoginScreen(
 
             Text(
                 text = "or",
-                fontSize = 16.sp,
-                fontFamily = Unbounded,
-                color = grayText
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.secondaryContainer
             )
 
             Spacer(modifier = Modifier.height(15.dp))
 
             CustomTextField(
-                text = email,
+                text = authViewModel.loginText,
                 placeholder = "Email",
                 onValueChange = {
-                    email.value = it
-                    isError.value = false // Сбрасываем ошибку при вводе
+                    authViewModel.onLoginTextChange(it)
+                    authViewModel.setErrorValue(false)
                 },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -128,16 +115,16 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(15.dp))
 
             CustomTextField(
-                text = password,
+                text = authViewModel.loginPassword,
                 placeholder = "Password",
                 onValueChange = {
-                    password.value = it
-                    isError.value = false // Сбрасываем ошибку при вводе
+                    authViewModel.onLoginPasswordChange(it)
+                    authViewModel.setErrorValue(false)
                 },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            if (isError.value) {
+            if (authViewModel.isError) {
                 Text(
                     text = "Email and Password cannot be empty!",
                     color = Color.Red,
@@ -154,47 +141,32 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Forgot password?",
-                    color = grayText,
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(),
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = Poppins
                 )
             }
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            Button(
+            CustomTitleButton(
+                title = "Login",
                 onClick = {
-                    if (email.value.isBlank() || password.value.isBlank()) {
-                        isError.value = true
+                    if (authViewModel.loginText.isBlank() || authViewModel.loginPassword.isBlank()) {
+                        authViewModel.setErrorValue(true)
                     } else {
                         authViewModel.login(
-                            email.value,
-                            password.value,
                             onSuccess = {
                                 navController.navigate("main") {
                                     popUpTo(0) { inclusive = true }
                                 }
                             }
                         )
-                        Log.d("LoginScreen", "Login successful for ${email.value}")
+                        Log.d("LoginScreen", "Login successful for ${authViewModel.loginText}")
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
-            ) {
-                Text(
-                    "Login",
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontFamily = Unbounded,
-                    modifier = Modifier.padding(5.dp),
-                )
-            }
+                }
+            )
 
             Spacer(modifier = Modifier.height(15.dp))
 
@@ -204,7 +176,8 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Don't have an account?",
-                    color = grayText
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondaryContainer
                 )
 
                 TextButton(
@@ -217,9 +190,8 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Create one!",
-                        color = secondaryColor,
-                        fontSize = 16.sp,
-                        fontFamily = Poppins
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
