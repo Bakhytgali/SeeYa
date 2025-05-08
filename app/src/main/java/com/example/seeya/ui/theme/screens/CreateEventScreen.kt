@@ -175,10 +175,10 @@ fun CreateEventScreen(
                         Log.d("My Log", "Creating an Event...")
                         eventViewModel.createEvent(
                             onSuccess = {
-
+                                Log.d("My Log", "Event Created")
                             },
                             onError = {
-
+                                Log.d("My Log", "Event Not Created")
                             }
                         )
                     }
