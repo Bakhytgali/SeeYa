@@ -10,6 +10,6 @@ data class CreateEventRequest(
     val location: String,
     val eventPicture: String?,
     val isOpen: Boolean,
-    val startDate: LocalDateTime
+    val startDate: String
 )
 

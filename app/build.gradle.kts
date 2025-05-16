@@ -51,6 +51,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.material.icons.extended)
+
+
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
 

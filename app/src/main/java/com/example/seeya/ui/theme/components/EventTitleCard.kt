@@ -100,45 +100,6 @@ fun EventTitleCard(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun EventExample(modifier: Modifier = Modifier) {
-    val event = Event(
-        name = "Hurry Up Tomorrow Listening Party",
-        category = "Music",
-        eventPicture = null,
-        isClosed = false,
-        creator = Creator(
-            id = "something",
-            name = "Rakhat",
-            surname = "Bakhytgali",
-            username = "NinjaFrog",
-            rating = 5.0
-        ),
-        participants = listOf(
-            Participant(
-                id = "something",
-                name = "Rakhat",
-                surname = "Bakhytgali",
-                username = "ninja_frog"
-            )
-        ),
-        description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras orci tellus, hendrerit et magna ac, porttitor",
-        location = "AITU, Open Space",
-        startDate = Date.from(
-            LocalDateTime.of(2025, 1, 31, 18, 0)
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-        ),
-        createdAt = Date(),
-        eventId = "EventId"
-    )
-
-    EventTitleCard(event)
-}
-
-
 fun base64ToBitmap(base64String: String): Bitmap? {
     return try {
         val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)

@@ -1,6 +1,8 @@
 package com.example.seeya.ui.theme.screens
 
 import android.util.Log
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,22 +36,48 @@ import com.example.seeya.ui.theme.components.EventCard
 import com.example.seeya.ui.theme.components.FilterButton
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.utils.TokenManager
+import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.event.EventViewModel
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun MainScreen(
     navController: NavController,
     eventViewModel: EventViewModel,
     authViewModel: AuthViewModel,
+    bottomBarViewModel: BottomBarViewModel,
     modifier: Modifier = Modifier
 ) {
-    val filters = listOf("For You", "Popular", "By You")
+    MainScaffold(
+        title = "Events",
+        navController = navController,
+        bottomBarViewModel = bottomBarViewModel,
+        content = { mod ->
+            MainScreenContent(
+                modifier = mod,
+                navController = navController,
+                bottomBarViewModel = bottomBarViewModel,
+                authViewModel = authViewModel,
+                eventViewModel = eventViewModel
+            )
+        }
+    )
+}
+
+@Composable
+fun MainScreenContent(
+    eventViewModel: EventViewModel,
+    navController: NavController,
+    bottomBarViewModel: BottomBarViewModel,
+    authViewModel: AuthViewModel,
+    modifier: Modifier = Modifier
+) {
+    val filters = listOf("Recommended", "Managing")
     var activeFilter by remember {
         mutableStateOf(filters[0])
     }
 
-    // ALL EVENTS
     val events = remember { mutableStateOf<List<Event>>(emptyList()) }
 
     val myEvents = remember { mutableStateOf<List<Event>>(emptyList()) }
@@ -78,85 +107,76 @@ fun MainScreen(
         )
     }
 
-    MainScaffold(
-        title = "Events",
-        navController = navController
-    ) { mod ->
-        Box(
-            modifier = mod
-                .fillMaxSize()
-                .background(bgColor),
-            contentAlignment = Alignment.Center
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(bgColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.Top
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Top
+            TextButton(
+                onClick = {
+                    authViewModel.logout()
+                    navController.navigate("login")
+                }
             ) {
+                Text("Logout")
+            }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                TextButton(
-                    onClick = {
-                        authViewModel.logout()
-
-                        navController.navigate("login") {
-                            popUpTo(0)
-                        }
-                    }
-                ) {
-                    Text(
-                        text = "Log Out"
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                filters.forEach { filter ->
+                    FilterButton(
+                        text = filter,
+                        isActive = filter == activeFilter,
+                        onClick = {
+                            activeFilter = filter
+                        },
+                        modifier = Modifier.weight(1f)
                     )
                 }
+            }
 
-                // Row Of Event Filtering Buttons
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    filters.forEach { filter ->
-                        FilterButton(
-                            text = filter,
-                            isActive = filter == activeFilter,
-                            onClick = {
-                                activeFilter = filter
+            Crossfade(
+                targetState = activeFilter,
+                animationSpec = tween(durationMillis = 300),
+                label = "TabContentAnimation"
+            ) { currentFilter ->
+                when (currentFilter) {
+                    "Recommended" -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(15.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(events.value.reversed()) { event ->
+                                EventCard(
+                                    event,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { navController.navigate("event/${event.eventId}") },
+                                )
                             }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if(activeFilter == "For You") {
-                        items(events.value.reversed()) { event ->
-                            EventCard(
-                                event = event,
-                                modifier = modifier.fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate("event/${event.eventId}")
-                                    }
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
                         }
-                    } else if (activeFilter == "By You") {
-                        items(myEvents.value.reversed()) { event ->
-                            EventCard(
-                                event = event,
-                                modifier = modifier.fillMaxWidth()
-                                    .clickable {
-                                        navController.navigate("event/${event.eventId}")
-                                        Log.d("EventClicker", event.toString())
-                                    }
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
+                    }
+
+                    "Managing" -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(15.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(myEvents.value.reversed()) { event ->
+                                EventCard(event, modifier = Modifier.fillMaxWidth())
+                            }
                         }
                     }
                 }

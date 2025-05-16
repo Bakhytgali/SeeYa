@@ -5,14 +5,19 @@ import com.example.seeya.data.model.CreateEventResponse
 import com.example.seeya.data.model.Event
 import com.example.seeya.data.model.LoginResponse
 import com.example.seeya.data.model.LoginRequest
+import com.example.seeya.data.model.SearchResponse
+import com.example.seeya.data.model.SearchUser
 import com.example.seeya.data.model.SignInRequest
 import com.example.seeya.data.model.SignInResponse
+import com.example.seeya.data.model.User
+import com.example.seeya.data.repository.SearchRepository
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface APIService {
     interface ApiService {
@@ -41,5 +46,9 @@ interface APIService {
         // Join events
         @POST("users/join/{eventId}")
         suspend fun joinEvent(@Header("Authorization") token: String, @Path("eventId") eventId: String): Response<Unit>
+
+        // Search User
+        @GET("/search/users")
+        suspend fun searchUser(@Query("query") value: String): Response<SearchResponse<List<SearchUser>>>
     }
 }

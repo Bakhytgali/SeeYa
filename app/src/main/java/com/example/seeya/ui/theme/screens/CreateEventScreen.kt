@@ -33,7 +33,7 @@ fun CreateEventScreen(
     navController: NavController,
     eventViewModel: EventViewModel
 ) {
-    var currentStep by rememberSaveable {
+    var currentStep by remember {
         mutableIntStateOf(0)
     }
 
@@ -41,12 +41,10 @@ fun CreateEventScreen(
         if(currentStep > 0) {
             currentStep--
         } else {
-            navController.navigate("main")
+            navController.popBackStack()
             eventViewModel.clearEntries()
         }
     }
-
-    val context = LocalContext.current
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
@@ -59,7 +57,7 @@ fun CreateEventScreen(
             currentStep--
         } else {
             eventViewModel.clearEntries()
-            navController.navigate("main")
+            navController.popBackStack()
         }
     }
 
@@ -171,14 +169,17 @@ fun CreateEventScreen(
                 onButtonClick = {
                     if(currentStep < 4) {
                         currentStep++
+                        Log.d("MyLog", "$currentStep")
                     } else if(currentStep == 4) {
                         Log.d("My Log", "Creating an Event...")
                         eventViewModel.createEvent(
                             onSuccess = {
-                                Log.d("My Log", "Event Created")
+                                navController.popBackStack()
+                                eventViewModel.clearEntries()
                             },
                             onError = {
                                 Log.d("My Log", "Event Not Created")
+                                currentStep = 0
                             }
                         )
                     }

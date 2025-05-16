@@ -1,6 +1,7 @@
 package com.example.seeya.data.model
 
 import com.google.gson.annotations.SerializedName
+import java.time.LocalDateTime
 import java.util.Date
 
 data class Event(
@@ -9,11 +10,12 @@ data class Event(
     val description: String,
     val category: String,
     val eventPicture: String? = null,
-    val isClosed: Boolean,
+    val isOpen: Boolean,
     val creator: Creator,
     val participants: List<Participant>?,
     val location: String,
-    val startDate: Date,
-    val createdAt: Date
+    val startDate: String,
+    val endDate: String? = null,
+    val createdAt: String
 )
 

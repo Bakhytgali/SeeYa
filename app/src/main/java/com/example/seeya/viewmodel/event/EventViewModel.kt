@@ -5,8 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -18,9 +20,13 @@ import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
 import com.example.seeya.data.repository.EventRepository
 import com.example.seeya.utils.TokenManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class EventViewModel(application: Application, private val repository: EventRepository) :
     AndroidViewModel(application) {
@@ -62,6 +68,40 @@ class EventViewModel(application: Application, private val repository: EventRepo
 
     var eventStartDate: LocalDateTime? by mutableStateOf(LocalDateTime.now())
         private set
+
+    private val _isParticipating = MutableStateFlow(false)
+        val isParticipating: StateFlow<Boolean> = _isParticipating.asStateFlow()
+
+    var eventInfoModalOpen by mutableStateOf(false)
+        private set
+
+    fun onEventInfoModalOpenChange(newValue: Boolean) {
+        eventInfoModalOpen = newValue
+    }
+
+    fun onSetIsParticipating(newValue: Boolean) {
+        _isParticipating.value = newValue
+    }
+
+    fun checkIfParticipating(userId: String) {
+        if(event!!.participants != null) {
+            _isParticipating.value = event!!.participants!!.any {
+                it.id == userId
+            }
+        } else if(event!!.participants == null) {
+            _isParticipating.value = false
+        }
+    }
+
+    private var _eventIsLoading = MutableStateFlow(false)
+    val eventIsLoading: StateFlow<Boolean> = _eventIsLoading.asStateFlow()
+
+    var isParticipateModalOpen by mutableStateOf(false)
+        private set
+
+    fun onIsParticipateModalOpen(newValue: Boolean) {
+        isParticipateModalOpen = newValue
+    }
 
     fun onEventTitleChange(newValue: String) {
         eventTitle = newValue
@@ -114,6 +154,15 @@ class EventViewModel(application: Application, private val repository: EventRepo
         }
     }
 
+    fun decodeBase64ToBitmap(base64Str: String): Bitmap? {
+        return try {
+            val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
+            BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
     private fun encodeToBase64(bitmap: Bitmap): String {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
@@ -125,6 +174,8 @@ class EventViewModel(application: Application, private val repository: EventRepo
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        val formatted = eventStartDate!!.format(formatter)
         if (user != null) {
             val userCreator = Creator(
                 id = user.id!!,
@@ -143,7 +194,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
                     isOpen = eventTypeIsOpen,
                     creator = userCreator,
                     location = eventLocation,
-                    startDate = eventStartDate!!,
+                    startDate = formatted,
                 )
 
                 val response = repository.createEvent(newEvent)
@@ -163,7 +214,6 @@ class EventViewModel(application: Application, private val repository: EventRepo
     ) {
         viewModelScope.launch {
             val response = repository.getAllEvents()
-
             if (response?.isSuccessful == true) {
                 response.body()?.let { events ->
                     onSuccess(events)
@@ -197,15 +247,24 @@ class EventViewModel(application: Application, private val repository: EventRepo
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            val response = repository.getEvent(eventId)
+            _eventIsLoading.value = true
+            try {
+                val response = repository.getEvent(eventId)
 
-            if (response?.isSuccessful == true) {
-                response.body()?.let { event ->
-                    loadEvent(event)
-                    onSuccess(event)
-                } ?: onError("Empty response from the server")
-            } else {
-                onError("Failed to fetch an event!: ${response?.message() ?: "Unknown Error"}")
+                if (response?.isSuccessful == true) {
+                    response.body()?.let { event ->
+                        loadEvent(event)
+                        onSuccess(event)
+                    } ?: run {
+                        onError("Empty response from the server")
+                    }
+                } else {
+                    onError("Failed to fetch an event!: ${response?.message() ?: "Unknown Error"}")
+                }
+            } catch (e: Exception) {
+                onError("Network error: ${e.message}")
+            } finally {
+                _eventIsLoading.value = false
             }
         }
     }

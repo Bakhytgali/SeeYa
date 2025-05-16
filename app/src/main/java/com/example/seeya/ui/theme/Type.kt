@@ -11,7 +11,8 @@ import com.example.seeya.R
 // "SeeYa" mobile application main font
 val Poppins = FontFamily(
     Font(R.font.poppins_bold, FontWeight.Bold),
-    Font(R.font.poppins_regular, FontWeight.Normal)
+    Font(R.font.poppins_regular, FontWeight.Normal),
+    Font(R.font.poppins_medium, FontWeight.Medium),
 )
 
 val Unbounded = FontFamily(

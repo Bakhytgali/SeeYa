@@ -1,6 +1,6 @@
 package com.example.seeya.data.model
 
-import java.util.Date
+import java.time.LocalDate
 
 data class Club(
     val name: String,
@@ -8,6 +8,6 @@ data class Club(
     val clubPicture: String,
     val isClosed: Boolean,
     val creatorId: String,
-    val participants: List<Participant>,
-    val createdAt: Date,
+    val participants: List<Participant>?,
+    val createdAt: LocalDate,
 )
