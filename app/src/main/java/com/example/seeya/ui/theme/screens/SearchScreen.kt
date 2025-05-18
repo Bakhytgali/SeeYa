@@ -42,6 +42,7 @@ import com.example.seeya.data.model.SearchUser
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.viewmodel.BottomBarViewModel
+import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.search.SearchState
 import com.example.seeya.viewmodel.search.SearchViewModel
 
@@ -50,12 +51,14 @@ fun SearchScreen(
     searchViewModel: SearchViewModel,
     navController: NavController,
     bottomBarViewModel: BottomBarViewModel,
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
     MainScaffold(
         title = "Search",
         navController = navController,
         bottomBarViewModel = bottomBarViewModel,
+        authViewModel = authViewModel,
         content = { mod -> SearchScreenContent(searchViewModel, modifier = mod) },
     )
 }

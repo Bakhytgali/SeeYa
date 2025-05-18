@@ -38,7 +38,7 @@ fun CreateEventScreen(
     }
 
     BackHandler {
-        if(currentStep > 0) {
+        if (currentStep > 0) {
             currentStep--
         } else {
             navController.popBackStack()
@@ -133,7 +133,7 @@ fun CreateEventScreen(
     Scaffold(
         topBar = {
             SimpleTopBar(
-                title = "New Event",
+                title = "New Club",
                 onClick = {
                     navOption()
                 }
@@ -167,10 +167,10 @@ fun CreateEventScreen(
                 content = content,
                 currentStep = currentStep,
                 onButtonClick = {
-                    if(currentStep < 4) {
+                    if (currentStep < 4) {
                         currentStep++
                         Log.d("MyLog", "$currentStep")
-                    } else if(currentStep == 4) {
+                    } else if (currentStep == 4) {
                         Log.d("My Log", "Creating an Event...")
                         eventViewModel.createEvent(
                             onSuccess = {

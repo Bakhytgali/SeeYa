@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -53,6 +54,7 @@ fun MainScreen(
         title = "Events",
         navController = navController,
         bottomBarViewModel = bottomBarViewModel,
+        authViewModel = authViewModel,
         content = { mod ->
             MainScreenContent(
                 modifier = mod,
@@ -110,7 +112,7 @@ fun MainScreenContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(bgColor),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -119,15 +121,6 @@ fun MainScreenContent(
                 .fillMaxHeight(),
             verticalArrangement = Arrangement.Top
         ) {
-            TextButton(
-                onClick = {
-                    authViewModel.logout()
-                    navController.navigate("login")
-                }
-            ) {
-                Text("Logout")
-            }
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,

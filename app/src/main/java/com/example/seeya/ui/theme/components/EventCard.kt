@@ -43,7 +43,7 @@ fun EventCard(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = primaryContainerColor
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
         modifier = modifier
     ) {

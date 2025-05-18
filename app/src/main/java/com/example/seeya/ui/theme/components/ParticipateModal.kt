@@ -52,7 +52,9 @@ fun ParticipateModal(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
                 textAlign = TextAlign.Center
             )
         },
@@ -92,8 +94,9 @@ fun ParticipateModal(
                             append("10.05 22:00")
                         }
                     },
+                    textAlign = TextAlign.Center
 
-                    )
+                )
                 Text(
                     buildAnnotatedString {
                         withStyle(
@@ -116,7 +119,8 @@ fun ParticipateModal(
                         ) {
                             append(event.location)
                         }
-                    }
+                    },
+                    textAlign = TextAlign.Center
                 )
             }
         }

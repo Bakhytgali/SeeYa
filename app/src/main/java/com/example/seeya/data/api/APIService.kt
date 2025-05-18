@@ -1,5 +1,6 @@
 package com.example.seeya.data.api
 
+import com.example.seeya.data.model.Club
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.CreateEventResponse
 import com.example.seeya.data.model.Event
@@ -50,5 +51,8 @@ interface APIService {
         // Search User
         @GET("/search/users")
         suspend fun searchUser(@Query("query") value: String): Response<SearchResponse<List<SearchUser>>>
+
+        @GET("/clubs")
+        suspend fun getMyClubs(@Header("Authorization") token: String): Response<List<Club>>
     }
 }

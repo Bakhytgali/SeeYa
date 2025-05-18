@@ -1,6 +1,9 @@
 package com.example.seeya.viewmodel.auth
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +17,7 @@ import com.example.seeya.data.model.User
 import com.example.seeya.data.repository.AuthRepository
 import com.example.seeya.utils.TokenManager
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 
 class AuthViewModel(application: Application, private val repository: AuthRepository) :
     AndroidViewModel(application) {
@@ -145,5 +149,21 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         TokenManager.logout(context)
         _user.postValue(null)
         _token.postValue(null)
+    }
+
+    fun decodeBase64ToBitmap(base64Str: String): Bitmap? {
+        return try {
+            val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
+            BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    private fun encodeToBase64(bitmap: Bitmap): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 }

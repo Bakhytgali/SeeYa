@@ -16,17 +16,17 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 private val DarkColorScheme = darkColorScheme(
     primary = secondaryColor, // который Фиолетовый
     onBackground = primaryColor, // который Черно-Синий
-    primaryContainer = primaryContainerColor,
+    primaryContainer = bgColor,
     secondaryContainer = grayText,
-    background = bgColor
+    background = primaryContainerColor
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = secondaryColor, // который Фиолетовый
     onBackground = primaryColor, // который Черно-Синий
-    primaryContainer = primaryContainerColor,
+    primaryContainer = bgColor,
     secondaryContainer = grayText,
-    background = bgColor
+    background = primaryContainerColor
 )
 
 @Composable

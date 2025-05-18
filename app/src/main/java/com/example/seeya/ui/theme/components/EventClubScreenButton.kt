@@ -30,7 +30,7 @@ fun EventClubScreenButton(
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = containerColor,
         ),
-        shape = RoundedCornerShape(5.dp),
+        shape = RoundedCornerShape(10.dp),
         border = BorderStroke(2.dp, borderColor)
     ) {
         Text(

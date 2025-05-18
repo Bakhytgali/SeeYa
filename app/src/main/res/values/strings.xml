@@ -27,4 +27,18 @@
     <string name="event_type_closed_description">
         Only approved members can join this event; an invitation or organizer’s approval is required.
     </string>
+
+    <!-- Club Categories Description-->
+    <string name="club_category_subtitle_community">
+        Connect with like-minded people, share your interests, and just have a good time together.
+    </string>
+    <string name="club_category_subtitle_volunteering">
+        Make a difference together: help out, support others, and spread some good energy.
+    </string>
+    <string name="club_category_subtitle_networking">
+        Meet new people, grow your connections, and level up in your professional journey.
+    </string>
+    <string name="club_category_subtitle_promotion">
+        Share your projects, art, or business and get the spotlight you deserve.
+    </string>
 </resources>

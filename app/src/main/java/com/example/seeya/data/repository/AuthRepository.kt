@@ -16,8 +16,8 @@ class AuthRepository(private val context: Context) {
 
         if (response.isSuccessful) {
             response.body()?.let { authResponse ->
-                TokenManager.saveToken(context, authResponse.token) // Сохраняем токен
-                TokenManager.saveUser(context, authResponse.user)   // Сохраняем юзера
+                TokenManager.saveToken(context, authResponse.token)
+                TokenManager.saveUser(context, authResponse.user)
             }
         }
 

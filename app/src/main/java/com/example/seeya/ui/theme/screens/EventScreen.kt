@@ -2,6 +2,7 @@ package com.example.seeya.ui.theme.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,7 +24,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.seeya.ui.theme.components.EventClubScreenButton
 import com.example.seeya.ui.theme.components.EventInfoBottomModal
@@ -42,6 +45,37 @@ fun EventScreen(
     eventViewModel: EventViewModel,
     bottomBarViewModel: BottomBarViewModel
 ) {
+    MainScaffold(
+        title = "",
+        navController = navController,
+        icon = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Nav Back Icon",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+        },
+        bottomBarViewModel = bottomBarViewModel,
+        authViewModel = authViewModel,
+        content = {mod-> EventScreenContent(
+            navController = navController,
+            modifier = mod,
+            authViewModel = authViewModel,
+            eventId = eventId,
+            eventViewModel = eventViewModel
+        ) }
+    )
+}
+
+@Composable
+fun EventScreenContent(
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    eventId: String,
+    eventViewModel: EventViewModel,
+    modifier: Modifier = Modifier
+) {
     LaunchedEffect(Unit) {
         eventViewModel.getEvent(
             eventId,
@@ -55,275 +89,295 @@ fun EventScreen(
     val doesParticipate = eventViewModel.isParticipating.collectAsState()
     val isLoading = eventViewModel.eventIsLoading.collectAsState()
 
-    MainScaffold(
-        title = "",
-        navController = navController,
-        icon = {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Nav Back Icon",
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(start = 10.dp)
-            )
-        },
-        bottomBarViewModel = bottomBarViewModel
-    ) { mod ->
-        Box(
-            modifier = mod
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                isLoading.value -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Loading event...")
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
+        when {
+            isLoading.value -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Loading event...")
+                }
+            }
+
+            eventViewModel.event == null -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Failed to load event")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = {
+                        eventViewModel.getEvent(
+                            eventId,
+                            onSuccess = {
+                                eventViewModel.checkIfParticipating(authViewModel.user.value!!.id!!)
+                            },
+                            onError = {}
+                        )
+                    }) {
+                        Text("Retry")
                     }
                 }
-                eventViewModel.event == null -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Failed to load event")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = {
-                            eventViewModel.getEvent(
-                                eventId,
-                                onSuccess = {
-                                    eventViewModel.checkIfParticipating(authViewModel.user.value!!.id!!)
-                                },
-                                onError = {}
-                            )
-                        }) {
-                            Text("Retry")
-                        }
-                    }
-                }
-                else -> {
-                    Column(
+            }
+
+            else -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    val event = eventViewModel.event!!
+
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .clip(
+                                RoundedCornerShape(15.dp)
+                            )
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        val event = eventViewModel.event!!
-
                         if (!event.eventPicture.isNullOrEmpty()) {
-                            eventViewModel.decodeBase64ToBitmap(event.eventPicture)?.let { bitmap ->
-                                Image(
-                                    bitmap = bitmap.asImageBitmap(),
-                                    contentDescription = "Event Image",
-                                    modifier = Modifier
-                                        .size(150.dp)
-                                        .clip(RoundedCornerShape(10.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
+                            eventViewModel.decodeBase64ToBitmap(event.eventPicture)
+                                ?.let { bitmap ->
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Event Image",
+                                        modifier = Modifier
+                                            .size(150.dp)
+                                            .clip(RoundedCornerShape(10.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
                         } else {
                             SeeYaLogo(
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Text(
-                            text = event.name,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        Text(
-                            text = event.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondaryContainer
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
+                        Column(
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(15.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Person,
-                                    contentDescription = "Participants",
-                                    tint = MaterialTheme.colorScheme.secondaryContainer,
-                                    modifier = Modifier.size(25.dp)
-                                )
-                                Text(
-                                    text = event.participants?.size?.toString() ?: "0",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            }
+                            Text(
+                                text = event.name,
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
 
-                            Spacer(Modifier.width(35.dp))
+                            Spacer(modifier = Modifier.height(15.dp))
+
+                            Text(
+                                text = event.description,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            )
+
+                            Spacer(modifier = Modifier.height(15.dp))
 
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                                horizontalArrangement = Arrangement.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Lock,
-                                    contentDescription = "Event Type",
-                                    tint = MaterialTheme.colorScheme.secondaryContainer,
-                                    modifier = Modifier.size(25.dp)
-                                )
-                                Text(
-                                    text = if (event.isOpen) "Open" else "Closed",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.clickable {
+                                        navController.navigate("eventUsers")
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Person,
+                                        contentDescription = "Participants",
+                                        tint = MaterialTheme.colorScheme.secondaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = event.participants?.size?.toString() ?: "0",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.secondaryContainer
+                                    )
+                                }
+
+                                Spacer(Modifier.width(25.dp))
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Lock,
+                                        contentDescription = "Event Type",
+                                        tint = MaterialTheme.colorScheme.secondaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = if (event.isOpen) "Open" else "Closed",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.secondaryContainer
+                                    )
+                                }
                             }
                         }
+                    }
 
-                        Spacer(Modifier.height(20.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(15.dp)
-                        ) {
-                            if (event.creator.id == authViewModel.user.value!!.id) {
-                                EventClubScreenButton(
-                                    title = "Manage",
-                                    onClick = {},
-                                    containerColor = MaterialTheme.colorScheme.background,
-                                    textColor = MaterialTheme.colorScheme.onBackground,
-                                    borderColor = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } else if (doesParticipate.value) {
-                                EventClubScreenButton(
-                                    title = "Participating",
-                                    onClick = {
-                                        eventViewModel.joinEvent(
-                                            eventId = event.eventId,
-                                            onSuccess = {
-                                                eventViewModel.onIsParticipateModalOpen(true)
-                                            },
-                                            onError = {
-                                                eventViewModel.onIsParticipateModalOpen(true)
-                                            }
-                                        )
-                                    },
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    textColor = MaterialTheme.colorScheme.primary,
-                                    borderColor = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } else {
-                                EventClubScreenButton(
-                                    title = "Participate",
-                                    onClick = {
-                                        eventViewModel.joinEvent(
-                                            eventId = event.eventId,
-                                            onSuccess = {
-                                                eventViewModel.onSetIsParticipating(true)
-                                                eventViewModel.onIsParticipateModalOpen(true)
-                                            },
-                                            onError = {
-                                                eventViewModel.onSetIsParticipating(false)
-                                                eventViewModel.onIsParticipateModalOpen(true)
-                                            }
-                                        )
-                                    },
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    textColor = MaterialTheme.colorScheme.background,
-                                    borderColor = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
+                    Spacer(Modifier.height(20.dp))
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(15.dp)
+                    ) {
+                        if (event.creator.id == authViewModel.user.value!!.id) {
                             EventClubScreenButton(
-                                title = "Info",
+                                title = "Manage",
+                                onClick = {},
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                textColor = MaterialTheme.colorScheme.onBackground,
+                                borderColor = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.weight(1f),
+                                textPadding = 5
+                            )
+                        } else if (doesParticipate.value) {
+                            EventClubScreenButton(
+                                title = "Participating",
                                 onClick = {
-                                    eventViewModel.onEventInfoModalOpenChange(true)
+                                    eventViewModel.joinEvent(
+                                        eventId = event.eventId,
+                                        onSuccess = {
+                                            eventViewModel.onIsParticipateModalOpen(true)
+                                        },
+                                        onError = {
+                                            eventViewModel.onIsParticipateModalOpen(true)
+                                        }
+                                    )
                                 },
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                textColor = MaterialTheme.colorScheme.secondaryContainer,
-                                borderColor = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.weight(1f)
+                                textColor = MaterialTheme.colorScheme.primary,
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f),
+                                textPadding = 5
+                            )
+                        } else {
+                            EventClubScreenButton(
+                                title = "Participate",
+                                onClick = {
+                                    eventViewModel.joinEvent(
+                                        eventId = event.eventId,
+                                        onSuccess = {
+                                            eventViewModel.onSetIsParticipating(true)
+                                            eventViewModel.onIsParticipateModalOpen(true)
+                                        },
+                                        onError = {
+                                            eventViewModel.onSetIsParticipating(false)
+                                            eventViewModel.onIsParticipateModalOpen(true)
+                                        }
+                                    )
+                                },
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                textColor = MaterialTheme.colorScheme.background,
+                                borderColor = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f),
+                                textPadding = 5
                             )
                         }
 
-                        Spacer(Modifier.height(20.dp))
+                        EventClubScreenButton(
+                            title = "Info",
+                            onClick = {
+                                eventViewModel.onEventInfoModalOpenChange(true)
+                            },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            textColor = MaterialTheme.colorScheme.secondaryContainer,
+                            borderColor = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.weight(1f),
+                            textPadding = 5
+                        )
+                    }
 
-                        Text(
-                            text = "Media",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                    Spacer(Modifier.height(20.dp))
+
+                    Text(
+                        text = "Media",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(15.dp)
+                    ) {
+                        EventClubScreenButton(
+                            title = "0 Images",
+                            onClick = {},
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            textColor = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.weight(1f),
+                            textPadding = 10,
+                            borderColor = MaterialTheme.colorScheme.primaryContainer,
+                            fontWeight = FontWeight.Normal
                         )
 
-                        Spacer(Modifier.height(10.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(15.dp)
-                        ) {
-                            EventClubScreenButton(
-                                title = "0 Images",
-                                onClick = {},
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                textColor = MaterialTheme.colorScheme.secondaryContainer,
-                                modifier = Modifier.weight(1f),
-                                textPadding = 10,
-                                borderColor = MaterialTheme.colorScheme.primaryContainer,
-                                fontWeight = FontWeight.Normal
-                            )
-
-                            EventClubScreenButton(
-                                title = "0 Videos",
-                                onClick = {},
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                textColor = MaterialTheme.colorScheme.secondaryContainer,
-                                modifier = Modifier.weight(1f),
-                                textPadding = 10,
-                                borderColor = MaterialTheme.colorScheme.primaryContainer,
-                                fontWeight = FontWeight.Normal
-                            )
-                        }
+                        EventClubScreenButton(
+                            title = "0 Videos",
+                            onClick = {},
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            textColor = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.weight(1f),
+                            textPadding = 10,
+                            borderColor = MaterialTheme.colorScheme.primaryContainer,
+                            fontWeight = FontWeight.Normal
+                        )
                     }
                 }
             }
+        }
 
-            // Модальные окна поверх основного контента
-            if (eventViewModel.isParticipateModalOpen) {
-                eventViewModel.event?.let { event ->
-                    ParticipateModal(
-                        event = event,
-                        onOk = {
-                            eventViewModel.onIsParticipateModalOpen(false)
-                        }
-                    )
-                }
+        // Модальные окна поверх основного контента
+        if (eventViewModel.isParticipateModalOpen) {
+            eventViewModel.event?.let { event ->
+                ParticipateModal(
+                    event = event,
+                    onOk = {
+                        eventViewModel.onIsParticipateModalOpen(false)
+                    }
+                )
             }
+        }
 
-            if(eventViewModel.eventInfoModalOpen) {
-                eventViewModel.event?.let { event ->
-                    EventInfoBottomModal(
-                        event = event,
-                        onDismiss = {
-                            eventViewModel.onEventInfoModalOpenChange(false)
-                        }
-                    )
-                }
+        if (eventViewModel.eventInfoModalOpen) {
+            eventViewModel.event?.let { event ->
+                EventInfoBottomModal(
+                    event = event,
+                    onDismiss = {
+                        eventViewModel.onEventInfoModalOpenChange(false)
+                    }
+                )
             }
         }
     }

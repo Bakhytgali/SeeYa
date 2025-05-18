@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.seeya.ui.theme.bgColor
 import com.example.seeya.viewmodel.BottomBarViewModel
+import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,6 +25,7 @@ fun MainScaffold(
     navController: NavController,
     icon: @Composable () -> Unit  = {},
     bottomBarViewModel: BottomBarViewModel,
+    authViewModel: AuthViewModel,
     content: @Composable (Modifier) -> Unit,
 ) {
     Scaffold(
@@ -60,6 +62,7 @@ fun MainScaffold(
             CustomBottomAppBar(
                 navController = navController,
                 bottomBarViewModel = bottomBarViewModel,
+                authViewModel = authViewModel,
                 modifier = Modifier.fillMaxWidth()
             )
         },

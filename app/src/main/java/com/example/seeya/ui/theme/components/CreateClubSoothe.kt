@@ -18,16 +18,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CreateEventSoothe(
+fun CreateClubSoothe(
     title: String,
     subtitle: String,
     content: @Composable () -> Unit,
     currentStep: Int,
     onButtonClick: () -> Unit,
-    titleFilled: Boolean,
-    tagsChosen: Boolean,
-    pictureChosen: Boolean,
-    locationAndDescriptionFilled: Boolean,
+    clubNameIsFilled: Boolean,
+    clubAreTagsChosen: Boolean,
+    clubPictureIsChosen: Boolean,
+    clubDescriptionFilled: Boolean,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -68,28 +68,28 @@ fun CreateEventSoothe(
                     CustomTitleButton(
                         title = "Continue",
                         onClick = onButtonClick,
-                        isActive = titleFilled
+                        isActive = clubNameIsFilled
                     )
                 }
                 2 -> {
                     CustomTitleButton(
                         title = "Continue",
                         onClick = onButtonClick,
-                        isActive = tagsChosen
+                        isActive = clubAreTagsChosen
                     )
                 }
                 3 -> {
                     CustomTitleButton(
                         title = "Continue",
                         onClick = onButtonClick,
-                        isActive = pictureChosen
+                        isActive = clubPictureIsChosen
                     )
                 }
                 4 -> {
                     CustomTitleButton(
                         title = "Continue",
                         onClick = onButtonClick,
-                        isActive = locationAndDescriptionFilled
+                        isActive = clubDescriptionFilled
                     )
                 }
             }

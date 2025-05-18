@@ -1,7 +1,5 @@
 package com.example.seeya.ui.theme.screens
 
-import android.widget.Space
-import androidx.compose.animation.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,11 +28,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,24 +51,35 @@ import com.example.seeya.data.model.Club
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.viewmodel.BottomBarViewModel
+import com.example.seeya.viewmodel.auth.AuthViewModel
+import com.example.seeya.viewmodel.clubs.ClubsState
+import com.example.seeya.viewmodel.clubs.ClubsViewModel
 import java.time.LocalDate
 
 @Composable
 fun ClubsScreen(
     navController: NavController,
     bottomBarViewModel: BottomBarViewModel,
+    authViewModel: AuthViewModel,
+    clubsViewModel: ClubsViewModel,
     modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(Unit) {
+        clubsViewModel.getMyClubs()
+    }
+
     MainScaffold(
         title = "Clubs",
         bottomBarViewModel = bottomBarViewModel,
         navController = navController,
-        content = { mod -> ClubsScreenContent(modifier = mod) }
+        authViewModel = authViewModel,
+        content = { mod -> ClubsScreenContent(clubsViewModel = clubsViewModel, modifier = mod) }
     )
 }
 
 @Composable
 fun ClubsScreenContent(
+    clubsViewModel: ClubsViewModel,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -104,7 +116,21 @@ fun ClubsScreenContent(
 
             Spacer(Modifier.height(20.dp))
 
-            FollowingClubsBlock(modifier = Modifier.fillMaxWidth())
+            when (clubsViewModel.myClubs) {
+                is ClubsState.Idle -> {}
+                is ClubsState.Loading -> { CircularProgressIndicator() }
+                is ClubsState.Empty -> {
+                    Text("Super Empty Here!", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondaryContainer)
+                }
+                is ClubsState.Success -> {
+                    FollowingClubsBlock(clubs = (clubsViewModel.myClubs as ClubsState.Success).clubs, modifier = Modifier.fillMaxWidth())
+                }
+                is ClubsState.Error -> {
+                    val error = (clubsViewModel.myClubs as ClubsState.Error)
+                    Text(text = error.message, style = MaterialTheme.typography.bodyMedium, color = Color.Red)
+                }
+                else -> {}
+            }
 
             Spacer(Modifier.height(20.dp))
 
@@ -114,7 +140,10 @@ fun ClubsScreenContent(
 }
 
 @Composable
-fun FollowingClubsBlock(modifier: Modifier = Modifier) {
+fun FollowingClubsBlock(
+    clubs: List<Club>,
+    modifier: Modifier = Modifier
+) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(15.dp))
@@ -155,24 +184,16 @@ fun FollowingClubsBlock(modifier: Modifier = Modifier) {
 
             Spacer(Modifier.height(20.dp))
 
-            BriefListOfClub()
+            BriefListOfClub(clubs = clubs)
         }
     }
 }
 
 @Composable
-fun BriefListOfClub(modifier: Modifier = Modifier) {
-    val club1 = Club(
-        "F1 Astana",
-        "Something",
-        "lmaooo",
-        false,
-        "somewhere",
-        emptyList(),
-        LocalDate.now()
-    )
-    val listOfClubs = listOf(club1, club1, club1, club1, club1, club1, club1, club1, club1)
-
+fun BriefListOfClub(
+    clubs: List<Club>,
+    modifier: Modifier = Modifier
+) {
     LazyHorizontalGrid(
         rows = GridCells.Fixed(2),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -181,7 +202,7 @@ fun BriefListOfClub(modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .height(200.dp)
     ) {
-        items(listOfClubs) { club ->
+        items(clubs) { club ->
             BriefClubCard(
                 club = club
             )
@@ -227,7 +248,7 @@ fun BriefClubCard(
         }
     }
 }
-
+ 
 @Composable
 fun RecommendedGroupsBlock(modifier: Modifier = Modifier) {
     Box(
