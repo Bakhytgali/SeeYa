@@ -30,6 +30,9 @@ class SearchViewModel(
         searchUser(searchText)
     }
 
+    private val _getUserState = MutableStateFlow<GetUserState>(GetUserState.Idle)
+    val getUserState: StateFlow<GetUserState> = _getUserState.asStateFlow()
+
     private fun searchUser(query: String) {
         viewModelScope.launch {
             _searchState.value = SearchState.Loading
@@ -50,6 +53,28 @@ class SearchViewModel(
             }
         }
     }
+
+    fun getUserById(userId: String) {
+        viewModelScope.launch {
+            _getUserState.value = GetUserState.Loading
+
+            when(val result = repository.getUserById(userId)) {
+                is SearchRepository.GetUserResult.Success -> {
+                    _getUserState.value = if(result.user != null) {
+                        GetUserState.Success(user = result.user)
+                    } else {
+                        GetUserState.Empty
+                    }
+                }
+                is SearchRepository.GetUserResult.Error -> {
+                    _getUserState.value = GetUserState.Error(
+                        message = result.message,
+                        code = result.code
+                    )
+                }
+            }
+        }
+    }
 }
 
 sealed class SearchState {
@@ -58,4 +83,12 @@ sealed class SearchState {
     data object Empty : SearchState()
     data class Success(val users: List<SearchUser>) : SearchState()
     data class Error(val message: String, val code: Int? = null) : SearchState()
+}
+
+sealed class GetUserState {
+    data object Idle: GetUserState()
+    data object Loading: GetUserState()
+    data object Empty: GetUserState()
+    data class Success(val user: User?): GetUserState()
+    data class Error(val message: String, val code: Int? = null): GetUserState()
 }

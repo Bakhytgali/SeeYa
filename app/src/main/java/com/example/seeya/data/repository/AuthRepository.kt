@@ -1,10 +1,13 @@
 package com.example.seeya.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.LoginResponse
 import com.example.seeya.data.model.LoginRequest
 import com.example.seeya.data.model.SignInRequest
+import com.example.seeya.data.model.VerifyCodeRequest
+import com.example.seeya.data.model.VerifyEmailRequest
 import com.example.seeya.utils.TokenManager
 import retrofit2.Response
 
@@ -25,12 +28,38 @@ class AuthRepository(private val context: Context) {
     }
 
     suspend fun registerUser(signInRequest: SignInRequest): String? {
-        val response = api.registerUser(signInRequest)
+        return try {
+            Log.d("AuthRepository", "Making API call with request: ${signInRequest.copy(password = "***")}")
 
-        return if(response.isSuccessful && response.code() == 201) {
-            response.body()?.message
-        } else {
-            null
+            val response = api.registerUser(signInRequest)
+            Log.d("AuthRepository", "Received response. Code: ${response.code()}, isSuccessful: ${response.isSuccessful}")
+
+            if (response.isSuccessful && response.code() == 200) {
+                val responseBody = response.body()
+                Log.d("AuthRepository", "Successful registration. Response body: $responseBody")
+                responseBody
+            } else {
+                val errorBody = response.errorBody()?.string()
+                Log.e("AuthRepository", "Registration failed. Error code: ${response.code()}, Error body: $errorBody")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "API call failed: ${e.message}", e)
+            throw e
         }
+    }
+
+
+    suspend fun verifyEmail(email: String): Boolean {
+        val request = VerifyEmailRequest(email)
+        Log.d("MY log", "$request")
+        val response = api.authVerifyEmail(request)
+        return response.isSuccessful && response.code() == 200
+    }
+
+    suspend fun verifyCode(code: String, email: String): Boolean {
+        val request = VerifyCodeRequest(code = code, email = email)
+        val response = api.authVerifyCode(request)
+        return response.isSuccessful && response.code() == 200
     }
 }

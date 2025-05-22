@@ -1,5 +1,6 @@
 package com.example.seeya
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -95,8 +96,11 @@ fun AppNavigation(
         composable("profile/{userId}") { navBackStackEntry ->
             val userId = navBackStackEntry.arguments?.getString("userId")
 
+            Log.d("Navigation to Profile", "$userId")
+
             if (!userId.isNullOrEmpty()) {
                 ProfileScreen(
+                    searchViewModel = searchViewModel,
                     userId = userId,
                     navController = navController,
                     bottomBarViewModel = bottomBarViewModel,

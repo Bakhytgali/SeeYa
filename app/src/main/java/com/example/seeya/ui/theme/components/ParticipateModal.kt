@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.seeya.data.model.Event
 import com.example.seeya.ui.theme.Poppins
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun ParticipateModal(
@@ -71,6 +73,15 @@ fun ParticipateModal(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
+
+                val dateSubString = event.startDate.substringBefore(" (")
+
+                val inputFormat = SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z", Locale.US)
+                val date = inputFormat.parse(dateSubString)
+
+                val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+                val formattedDate = outputFormat.format(date)
+
                 Text(
                     buildAnnotatedString {
                         withStyle(
@@ -91,7 +102,7 @@ fun ParticipateModal(
                                 fontWeight = FontWeight.Bold,
                             )
                         ) {
-                            append("10.05 22:00")
+                            append(formattedDate)
                         }
                     },
                     textAlign = TextAlign.Center

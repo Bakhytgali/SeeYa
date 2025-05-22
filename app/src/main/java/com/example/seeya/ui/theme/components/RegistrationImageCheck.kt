@@ -1,5 +1,8 @@
 package com.example.seeya.ui.theme.components
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,34 +24,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.seeya.viewmodel.event.EventViewModel
+import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
-fun CreateEventPicture(
-    eventViewModel: EventViewModel,
-    onClick: () -> Unit,
+fun RegistrationImageCheck(
+    authViewModel: AuthViewModel,
+    onSkipStep: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                authViewModel.handleImageUri(it)
+            }
+        }
+
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
         Box(
             modifier = Modifier
                 .size(200.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable {
-                    onClick()
+                    launcher.launch("image/*")
                 }
             ,
             contentAlignment = Alignment.Center
         ) {
-            if (eventViewModel.imageBitmap != null) {
+            if (authViewModel.imageBitmap != null) {
                 Image(
-                    bitmap = eventViewModel.imageBitmap!!.asImageBitmap(),
+                    bitmap = authViewModel.imageBitmap!!.asImageBitmap(),
                     contentDescription = "Selected Image",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -65,5 +76,18 @@ fun CreateEventPicture(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.secondaryContainer
         )
+
+        Spacer(Modifier.height(30.dp))
+
+        TextButton(
+            onClick = onSkipStep
+        ) {
+            Text(
+                text = "Skip",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }

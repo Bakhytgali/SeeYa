@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
@@ -80,7 +79,7 @@ fun EventScreenContent(
         eventViewModel.getEvent(
             eventId,
             onSuccess = {
-                eventViewModel.checkIfParticipating(authViewModel.user.value!!.id!!)
+                eventViewModel.checkIfParticipating(authViewModel.currentUser.value!!.id!!)
             },
             onError = {}
         )
@@ -120,7 +119,7 @@ fun EventScreenContent(
                         eventViewModel.getEvent(
                             eventId,
                             onSuccess = {
-                                eventViewModel.checkIfParticipating(authViewModel.user.value!!.id!!)
+                                eventViewModel.checkIfParticipating(authViewModel.currentUser.value!!.id!!)
                             },
                             onError = {}
                         )
@@ -251,7 +250,7 @@ fun EventScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(15.dp)
                     ) {
-                        if (event.creator.id == authViewModel.user.value!!.id) {
+                        if (event.creator.id == authViewModel.currentUser.value!!.id) {
                             EventClubScreenButton(
                                 title = "Manage",
                                 onClick = {},
@@ -357,8 +356,6 @@ fun EventScreenContent(
                 }
             }
         }
-
-        // Модальные окна поверх основного контента
         if (eventViewModel.isParticipateModalOpen) {
             eventViewModel.event?.let { event ->
                 ParticipateModal(

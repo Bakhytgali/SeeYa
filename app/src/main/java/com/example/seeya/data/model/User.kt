@@ -9,10 +9,11 @@ data class User(
     var surname: String,
     val email: String,
     val username: String,
-    val password: String,
     val isAdmin: Boolean,
+    val interestedTags: List<String>,
     var profilePicture: String,
-    var visitedEvents: List<Event>,
-    var joinedClubs: List<Club>,
-    val createdAt: Date
+    var visitedEvents: List<String>,
+    var joinedClubs: List<String>,
+    val createdAt: Date,
+    val rating: Double = 0.0,
 )

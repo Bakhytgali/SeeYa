@@ -2,7 +2,31 @@
     <string name="app_name">SeeYa</string>
 
     <string name="login_greet">
-        Welcome to SeeYa! Here you can find attend events, meet new people and have fun!
+        Welcome to SeeYa! Here you can find and attend events or meet new people and have fun!
+    </string>
+
+    <string name="register_title_step_1">
+        Welcome! Start creating an account by entering your email!
+    </string>
+
+    <string name="register_title_step_2">
+        Now come up with a strong password!
+    </string>
+
+    <string name="register_title_step_3">
+        Now onto your details, I guess you have a name? Unless you don\'t…for some reason
+    </string>
+
+    <string name="register_title_step_5">
+        Cool! You have a name! Now would you like to choose a profile picture?
+    </string>
+
+    <string name="register_title_step_4">
+        What about your interests? (Mandatory btw)
+    </string>
+
+    <string name="register_title_step_6">
+        Check your email, and enter the code we sent you!
     </string>
 
     <string name="event_category_meetup_subtitle">

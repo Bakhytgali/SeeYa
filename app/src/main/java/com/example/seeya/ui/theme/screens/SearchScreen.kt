@@ -1,5 +1,6 @@
 package com.example.seeya.ui.theme.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,13 +60,27 @@ fun SearchScreen(
         navController = navController,
         bottomBarViewModel = bottomBarViewModel,
         authViewModel = authViewModel,
-        content = { mod -> SearchScreenContent(searchViewModel, modifier = mod) },
+        content = { mod ->
+            SearchScreenContent(
+                searchViewModel,
+                onClick = { userId ->
+                    Log.d("Search User", userId)
+                    navController.navigate("profile/$userId") {
+                        launchSingleTop = true
+                    }
+                },
+                modifier = mod,
+                authViewModel = authViewModel
+            )
+        },
     )
 }
 
 @Composable
 fun SearchScreenContent(
     searchViewModel: SearchViewModel,
+    onClick: (String) -> Unit,
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -101,13 +116,22 @@ fun SearchScreenContent(
 
             Spacer(Modifier.height(15.dp))
 
-            SearchResultDisplay(searchViewModel = searchViewModel, modifier = Modifier.fillMaxHeight().fillMaxWidth())
+            SearchResultDisplay(
+                searchViewModel = searchViewModel,
+                onClick = onClick,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(),
+                authViewModel = authViewModel
+            )
         }
     }
 }
 
 @Composable
 fun SearchResultDisplay(
+    authViewModel: AuthViewModel,
+    onClick: (String) -> Unit,
     searchViewModel: SearchViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -125,14 +149,25 @@ fun SearchResultDisplay(
                     textAlign = TextAlign.Center
                 )
             }
+
             is SearchState.Loading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             is SearchState.Success -> {
                 val users = (searchState as SearchState.Success).users
-                if(users.isEmpty()) {
+
+                val currentUserId = authViewModel.currentUser.value?.id
+
+                val filteredUsers = if (currentUserId != null) {
+                    users.filter { it.id != currentUserId }
+                } else {
+                    users
+                }
+
+                if (filteredUsers.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -150,8 +185,8 @@ fun SearchResultDisplay(
                         contentPadding = PaddingValues(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        itemsIndexed(users) { index, user ->
-                            SearchUserItem(user = user, index = index + 1)
+                        itemsIndexed(filteredUsers) { index, user ->
+                            SearchUserItem(user = user, index = index + 1, onClick = onClick)
                         }
                     }
                 }
@@ -176,10 +211,12 @@ fun SearchResultDisplay(
 
 @Composable
 fun SearchUserItem(
+    onClick: (String) -> Unit,
     user: SearchUser,
     index: Int,
     modifier: Modifier = Modifier
 ) {
+    Log.d("Search User", user.id)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -194,7 +231,8 @@ fun SearchUserItem(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+            ),
+            onClick = { onClick(user.id) }
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp)

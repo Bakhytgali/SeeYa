@@ -1,7 +1,5 @@
 package com.example.seeya.ui.theme.screens
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -27,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,15 +54,11 @@ import com.example.seeya.data.model.ClubTypes
 import com.example.seeya.data.model.EventTags
 import com.example.seeya.ui.theme.components.CreateClubSoothe
 import com.example.seeya.ui.theme.components.CustomTextField
-import com.example.seeya.ui.theme.components.ListOfTags
-import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.ui.theme.components.SeeYaLogo
 import com.example.seeya.ui.theme.components.SimpleTopBar
 import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.clubs.ClubsViewModel
-import java.time.LocalDateTime
-import java.util.Calendar
 
 @Composable
 fun CreateClubScreen(

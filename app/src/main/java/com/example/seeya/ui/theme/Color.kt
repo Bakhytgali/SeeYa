@@ -16,5 +16,5 @@ val Pink40 = Color(0xFF7D5260)
 val bgColor = Color(0xFFFFFFFF) // White, for background
 val primaryColor = Color(0xFF0C0021) // Primary Blue
 val secondaryColor = Color(0xFF551ADE) // Secondary Purple
-val primaryContainerColor = Color(0xFFF2F2F2)
+val primaryContainerColor = Color(0xFFF5F5F7)
 val grayText = Color(0xFF9D9D9D)

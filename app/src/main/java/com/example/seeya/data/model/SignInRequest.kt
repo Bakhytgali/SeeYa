@@ -5,5 +5,7 @@ data class SignInRequest(
     val surname: String,
     val username: String,
     val email: String,
-    val password: String
+    val password: String,
+    val interestedTags: List<String>,
+    val profilePicture: String?
 )

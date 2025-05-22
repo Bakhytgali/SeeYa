@@ -9,15 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Group
-import androidx.compose.material.icons.rounded.AddCircle
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +28,26 @@ fun CustomBottomAppBar(
     bottomBarViewModel: BottomBarViewModel,
     modifier: Modifier = Modifier
 ) {
+    fun navigateTo(destination: String) {
+        if (bottomBarViewModel.activePage == destination) return
+
+        bottomBarViewModel.onActivePageChange(destination)
+
+        navController.navigate(destination) {
+            launchSingleTop = true
+            restoreState = true
+
+            when (destination) {
+                "main" -> {
+                    popUpTo("main") { inclusive = false }
+                }
+                else -> {
+                    popUpTo("main") { saveState = true }
+                }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -51,107 +63,72 @@ fun CustomBottomAppBar(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Home
                 BottomBarItem(
                     icon = {
                         Image(
-                            painter = if (bottomBarViewModel.activePage == "Home") painterResource(R.drawable.home_icon) else painterResource(
-                                R.drawable.home_icon_inactive
-                            ),
-                            contentDescription = "Bottom Bar Home Icon",
+                            painter = if (bottomBarViewModel.activePage == "home") painterResource(R.drawable.home_icon)
+                            else painterResource(R.drawable.home_icon_inactive),
+                            contentDescription = "Home",
                             modifier = Modifier.size(30.dp)
                         )
                     },
-                    navigate = {
-                        if (bottomBarViewModel.activePage != "Home") {
-                            navController.navigate("main") {
-                                popUpTo("main") { inclusive = true }
-                                launchSingleTop = true
-                                bottomBarViewModel.onActivePageChange(newValue = "Home")
-                            }
-                        }
-                    }
+                    navigate = { navigateTo("main") }
                 )
+
+                // Clubs
                 BottomBarItem(
                     icon = {
                         Image(
-                            painter = if (bottomBarViewModel.activePage == "Clubs") painterResource(
-                                R.drawable.clubs_icon
-                            ) else painterResource(R.drawable.clubs_icon_inactive),
-                            contentDescription = "Bottom Bar Clubs Icon",
+                            painter = if (bottomBarViewModel.activePage == "clubs") painterResource(R.drawable.clubs_icon)
+                            else painterResource(R.drawable.clubs_icon_inactive),
+                            contentDescription = "Clubs",
                             modifier = Modifier.size(30.dp)
                         )
                     },
-                    navigate = {
-                        navController.navigate("clubs") {
-                            launchSingleTop = true
-                            bottomBarViewModel.onActivePageChange(newValue = "Clubs")
-                        }
-                    }
+                    navigate = { navigateTo("clubs") }
                 )
+
+                // Create
                 BottomBarItem(
                     icon = {
                         Image(
-                            painter = if (bottomBarViewModel.activePage == "Create") painterResource(
-                                R.drawable.add_icon
-                            ) else painterResource(R.drawable.add_icon_inactive),
-                            contentDescription = "Bottom Bar Create Icon",
+                            painter = if (bottomBarViewModel.activePage == "createScreen") painterResource(R.drawable.add_icon)
+                            else painterResource(R.drawable.add_icon_inactive),
+                            contentDescription = "Create",
                             modifier = Modifier.size(45.dp)
                         )
                     },
-                    navigate = {
-                        navController.navigate("createScreen") {
-                            launchSingleTop = true
-                            bottomBarViewModel.onActivePageChange(newValue = "Create")
-                        }
-                    }
+                    navigate = { navigateTo("createScreen") }
                 )
-                BottomBarItem(
-                    icon = {
-                        Image(
-                            painter = if (bottomBarViewModel.activePage == "Search") painterResource(
-                                R.drawable.search_icon
-                            ) else painterResource(R.drawable.search_icon_inactive),
-                            contentDescription = "Bottom Bar Search Icon",
-                            modifier = Modifier.size(30.dp)
-                        )
-                    },
-                    navigate = {
-                        navController.navigate("search") {
-                            popUpTo("search") { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                            bottomBarViewModel.onActivePageChange(newValue = "Search")
-                        }
-                    }
-                )
-                BottomBarItem(
-                    icon = {
-                        Image(
-                            painter = if (bottomBarViewModel.activePage == "Profile") painterResource(
-                                R.drawable.profile_icon
-                            ) else painterResource(R.drawable.user_inactive),
-                            contentDescription = "Bottom Bar Clubs Icon",
-                            modifier = Modifier.size(30.dp)
-                        )
-                    },
-                    navigate = {
-                        val userId = authViewModel.user.value?.id
 
-                        if (!userId.isNullOrEmpty()) {
-                            navController.navigate("profile/$userId") {
-                                popUpTo("profile/{userId}") { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                                bottomBarViewModel.onActivePageChange(newValue = "Profile")
-                            }
-                        } else {
-                            navController.navigate("profile/failed") {
-                                popUpTo("profile/{userId}") { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                                bottomBarViewModel.onActivePageChange(newValue = "Profile")
-                            }
-                        }
+                // Search
+                BottomBarItem(
+                    icon = {
+                        Image(
+                            painter = if (bottomBarViewModel.activePage == "search") painterResource(R.drawable.search_icon)
+                            else painterResource(R.drawable.search_icon_inactive),
+                            contentDescription = "Search",
+                            modifier = Modifier.size(30.dp)
+                        )
+                    },
+                    navigate = { navigateTo("search") }
+                )
+
+                // Profile
+                BottomBarItem(
+                    icon = {
+                        Image(
+                            painter = if (bottomBarViewModel.activePage.contains("profile")) painterResource(R.drawable.profile_icon)
+                            else painterResource(R.drawable.user_inactive),
+                            contentDescription = "Profile",
+                            modifier = Modifier.size(30.dp)
+                        )
+                    },
+                    navigate = {
+                        authViewModel.currentUser.value?.id?.let { userId ->
+                            navigateTo("profile/$userId")
+                        } ?: navigateTo("profile/failed")
                     }
                 )
             }

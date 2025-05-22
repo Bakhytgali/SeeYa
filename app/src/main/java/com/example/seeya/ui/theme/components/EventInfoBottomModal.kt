@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.materialIcon
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocationOn
@@ -35,6 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.seeya.data.model.Event
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,6 +114,27 @@ fun EventInfoBottomModal(
                     },
                     iconTitle = "Location",
                     rowText = event.location
+                )
+
+                val dateSubString = event.startDate.substringBefore(" (")
+
+                val inputFormat = SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z", Locale.US)
+                val date = inputFormat.parse(dateSubString)
+
+                val outputFormat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
+                val formattedDate = outputFormat.format(date)
+
+                EventInfoModalRow(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Outlined.CalendarMonth,
+                            contentDescription = "Info Modal Event Location",
+                            tint = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    iconTitle = "Date Time",
+                    rowText = formattedDate
                 )
             }
             IconButton(

@@ -15,6 +15,11 @@ class SearchRepository(private val context: Context) {
         data class Error(val message: String, val code: Int? = null) : SearchResult()
     }
 
+    sealed class GetUserResult {
+        data class Success(val user: User?): GetUserResult()
+        data class Error(val message: String, val code: Int? = null): GetUserResult()
+    }
+
     suspend fun searchUser(value: String): SearchResult {
         return try {
             val response = api.searchUser(value)
@@ -29,6 +34,25 @@ class SearchRepository(private val context: Context) {
         } catch (e: Exception) {
             SearchResult.Error(
                 message = e.message ?: "Network error",
+                code = null
+            )
+        }
+    }
+
+    suspend fun getUserById(userId: String): GetUserResult {
+        return try {
+            val response = api.getUserById(userId)
+            if(response.isSuccessful) {
+                GetUserResult.Success(user = response.body())
+            } else {
+                GetUserResult.Error(
+                    message = response.message(),
+                    code = response.code()
+                )
+            }
+        } catch (e: Exception) {
+            GetUserResult.Error(
+                message = e.message ?: "Network Error",
                 code = null
             )
         }

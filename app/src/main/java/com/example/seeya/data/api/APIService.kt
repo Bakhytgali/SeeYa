@@ -11,6 +11,8 @@ import com.example.seeya.data.model.SearchUser
 import com.example.seeya.data.model.SignInRequest
 import com.example.seeya.data.model.SignInResponse
 import com.example.seeya.data.model.User
+import com.example.seeya.data.model.VerifyCodeRequest
+import com.example.seeya.data.model.VerifyEmailRequest
 import com.example.seeya.data.repository.SearchRepository
 import retrofit2.Response
 import retrofit2.http.Body
@@ -28,7 +30,13 @@ interface APIService {
         suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
 
         @POST("auth/register")
-        suspend fun registerUser(@Body request: SignInRequest): Response<SignInResponse>
+        suspend fun registerUser(@Body request: SignInRequest): Response<String>
+
+        @POST("auth/verify/email")
+        suspend fun authVerifyEmail(@Body request: VerifyEmailRequest): Response<Boolean>
+
+        @POST("auth/verify/code")
+        suspend fun authVerifyCode(@Body request: VerifyCodeRequest): Response<Boolean>
 
         // CREATE AN EVENT
         @POST("events/create")
@@ -51,6 +59,9 @@ interface APIService {
         // Search User
         @GET("/search/users")
         suspend fun searchUser(@Query("query") value: String): Response<SearchResponse<List<SearchUser>>>
+
+        @GET("/users/{userId}")
+        suspend fun getUserById(@Path("userId") userId: String): Response<User>
 
         @GET("/clubs")
         suspend fun getMyClubs(@Header("Authorization") token: String): Response<List<Club>>

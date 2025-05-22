@@ -13,6 +13,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import okhttp3.internal.format
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -72,8 +74,14 @@ fun CreateEventDetails(
             }
         )
 
+        val inputFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US)
+        val date = inputFormat.parse(eventDateTime.toString())
+
+        val outputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val formattedDate = outputFormat.format(date)
+
         CustomTextField(
-            text = eventDateTime.toString(),
+            text = formattedDate,
             onValueChange = {
 
             },
