@@ -30,6 +30,7 @@ import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.event.EventViewModel
+import com.example.seeya.viewmodel.search.SearchViewModel
 
 @Composable
 fun EventUsersPage(
@@ -37,6 +38,7 @@ fun EventUsersPage(
     bottomBarViewModel: BottomBarViewModel,
     authViewModel: AuthViewModel,
     navController: NavController,
+    searchViewModel: SearchViewModel,
 ) {
     val users = eventViewModel.event?.participants
 
@@ -58,7 +60,8 @@ fun EventUsersPage(
                 users = users,
                 modifier = mod
             )
-        }
+        },
+        searchViewModel = searchViewModel
     )
 }
 

@@ -1,5 +1,6 @@
 package com.example.seeya.ui.theme.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
@@ -35,11 +35,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,12 +49,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.seeya.R
 import com.example.seeya.data.model.Club
+import com.example.seeya.data.model.Creator
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.clubs.ClubsState
 import com.example.seeya.viewmodel.clubs.ClubsViewModel
+import com.example.seeya.viewmodel.search.SearchViewModel
 import java.time.LocalDate
 
 @Composable
@@ -62,6 +65,7 @@ fun ClubsScreen(
     bottomBarViewModel: BottomBarViewModel,
     authViewModel: AuthViewModel,
     clubsViewModel: ClubsViewModel,
+    searchViewModel: SearchViewModel,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
@@ -73,12 +77,20 @@ fun ClubsScreen(
         bottomBarViewModel = bottomBarViewModel,
         navController = navController,
         authViewModel = authViewModel,
-        content = { mod -> ClubsScreenContent(clubsViewModel = clubsViewModel, modifier = mod) }
+        content = { mod ->
+            ClubsScreenContent(
+                clubsViewModel = clubsViewModel,
+                modifier = mod,
+                navController = navController,
+            )
+        },
+        searchViewModel = searchViewModel,
     )
 }
 
 @Composable
 fun ClubsScreenContent(
+    navController: NavController,
     clubsViewModel: ClubsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -118,29 +130,48 @@ fun ClubsScreenContent(
 
             when (clubsViewModel.myClubs) {
                 is ClubsState.Idle -> {}
-                is ClubsState.Loading -> { CircularProgressIndicator() }
+                is ClubsState.Loading -> {
+                    CircularProgressIndicator()
+                }
+
                 is ClubsState.Empty -> {
-                    Text("Super Empty Here!", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondaryContainer)
+                    Text(
+                        "Super Empty Here!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    )
                 }
+
                 is ClubsState.Success -> {
-                    FollowingClubsBlock(clubs = (clubsViewModel.myClubs as ClubsState.Success).clubs, modifier = Modifier.fillMaxWidth())
+                    FollowingClubsBlock(
+                        clubs = (clubsViewModel.myClubs as ClubsState.Success).clubs,
+                        modifier = Modifier.fillMaxWidth(),
+                        navController = navController
+                    )
                 }
+
                 is ClubsState.Error -> {
                     val error = (clubsViewModel.myClubs as ClubsState.Error)
-                    Text(text = error.message, style = MaterialTheme.typography.bodyMedium, color = Color.Red)
+                    Text(
+                        text = error.message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Red
+                    )
                 }
+
                 else -> {}
             }
 
             Spacer(Modifier.height(20.dp))
 
-            RecommendedGroupsBlock(modifier = Modifier.fillMaxWidth())
+            RecommendedGroupsBlock(modifier = Modifier.fillMaxWidth(), navController = navController)
         }
     }
 }
 
 @Composable
 fun FollowingClubsBlock(
+    navController: NavController,
     clubs: List<Club>,
     modifier: Modifier = Modifier
 ) {
@@ -184,7 +215,7 @@ fun FollowingClubsBlock(
 
             Spacer(Modifier.height(20.dp))
 
-            BriefListOfClub(clubs = clubs)
+            BriefListOfClub(clubs = clubs, navController = navController)
         }
     }
 }
@@ -192,6 +223,7 @@ fun FollowingClubsBlock(
 @Composable
 fun BriefListOfClub(
     clubs: List<Club>,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     LazyHorizontalGrid(
@@ -204,7 +236,11 @@ fun BriefListOfClub(
     ) {
         items(clubs) { club ->
             BriefClubCard(
-                club = club
+                club = club,
+                onClick = {
+                    Log.d("Navigating", club.id)
+                    navController.navigate("clubs/$it")
+                }
             )
         }
     }
@@ -212,6 +248,7 @@ fun BriefListOfClub(
 
 @Composable
 fun BriefClubCard(
+    onClick: (String) -> Unit,
     club: Club,
     modifier: Modifier = Modifier
 ) {
@@ -219,17 +256,27 @@ fun BriefClubCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent,
         ),
-        modifier = Modifier.height(100.dp)
+        modifier = Modifier.height(100.dp),
+        onClick = { onClick(club.id) }
     ) {
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(15.dp),
+            modifier = Modifier.padding(10.dp)
         ) {
-            Image(
-                painter = painterResource(R.drawable.google_logo),
-                contentDescription = "Test Image",
-                modifier = Modifier.size(50.dp)
-            )
+            club.clubPicture?.let { base64 ->
+                val bitmap = decodeBase64ToBitmap(base64)
+                bitmap?.let {
+                    Image(
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = "Club Logo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
+            }
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -247,10 +294,11 @@ fun BriefClubCard(
             }
         }
     }
+
 }
- 
+
 @Composable
-fun RecommendedGroupsBlock(modifier: Modifier = Modifier) {
+fun RecommendedGroupsBlock(modifier: Modifier = Modifier, navController: NavController) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(15.dp))
@@ -298,13 +346,16 @@ fun RecommendedGroupsBlock(modifier: Modifier = Modifier) {
 @Composable
 fun BriefRecommendedClubs(modifier: Modifier = Modifier) {
     val club1 = Club(
+        "",
         "F1 Astana",
         "Something",
         "lmaooo",
         false,
-        "somewhere",
+        Creator("dsa", "", "", 0.4, ""),
         emptyList(),
-        LocalDate.now()
+        LocalDate.now(),
+        clubTags = "Something",
+        category = "Something"
     )
     val listOfClubs = listOf(club1, club1, club1, club1, club1, club1, club1, club1, club1)
 

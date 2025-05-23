@@ -6,17 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,63 +23,52 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.seeya.ui.theme.components.EventClubScreenButton
-import com.example.seeya.ui.theme.components.EventInfoBottomModal
-import com.example.seeya.ui.theme.components.MainScaffold
-import com.example.seeya.ui.theme.components.ParticipateModal
-import com.example.seeya.ui.theme.components.SeeYaLogo
-import com.example.seeya.ui.theme.components.SimpleTopBar
+import com.example.seeya.data.model.Club
+import com.example.seeya.ui.theme.components.*
 import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
-import com.example.seeya.viewmodel.event.EventViewModel
+import com.example.seeya.viewmodel.clubs.ClubsViewModel
 
 @Composable
-fun EventScreen(
+fun ClubScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    eventId: String,
-    eventViewModel: EventViewModel,
+    clubId: String,
+    clubsViewModel: ClubsViewModel,
     bottomBarViewModel: BottomBarViewModel
 ) {
     Scaffold(
         topBar = {
-            SimpleTopBar(
-                ""
-            ) {
+            SimpleTopBar("") {
                 navController.popBackStack()
             }
         }
     ) { paddingValues ->
-        EventScreenContent(
+        ClubScreenContent(
             navController = navController,
             authViewModel = authViewModel,
-            eventId = eventId,
-            eventViewModel = eventViewModel,
+            clubId = clubId,
+            clubsViewModel = clubsViewModel,
             modifier = Modifier.padding(paddingValues)
         )
     }
 }
 
+
 @Composable
-fun EventScreenContent(
+fun ClubScreenContent(
     navController: NavController,
     authViewModel: AuthViewModel,
-    eventId: String,
-    eventViewModel: EventViewModel,
+    clubId: String,
+    clubsViewModel: ClubsViewModel,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
-        eventViewModel.getEvent(
-            eventId,
-            onSuccess = {
-                eventViewModel.checkIfParticipating(authViewModel.currentUser.value!!.id!!)
-            },
-            onError = {}
-        )
+        clubsViewModel.fetchClubById(clubId)
+        authViewModel.currentUser.value?.id?.let { userId ->
+            clubsViewModel.checkIfParticipating(userId)
+        }
     }
-
-    val doesParticipate = eventViewModel.isParticipating.collectAsState()
-    val isLoading = eventViewModel.eventIsLoading.collectAsState()
 
     Box(
         modifier = modifier
@@ -96,7 +77,7 @@ fun EventScreenContent(
         contentAlignment = Alignment.Center
     ) {
         when {
-            isLoading.value -> {
+            clubsViewModel.isLoading -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -104,26 +85,20 @@ fun EventScreenContent(
                 ) {
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Loading event...")
+                    Text("Loading club...")
                 }
             }
 
-            eventViewModel.event == null -> {
+            clubsViewModel.club == null -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Failed to load event")
+                    Text("Failed to load club")
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = {
-                        eventViewModel.getEvent(
-                            eventId,
-                            onSuccess = {
-                                eventViewModel.checkIfParticipating(authViewModel.currentUser.value!!.id!!)
-                            },
-                            onError = {}
-                        )
+                        // clubsViewModel.getClub(clubId)
                     }) {
                         Text("Retry")
                     }
@@ -140,24 +115,22 @@ fun EventScreenContent(
                 ) {
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    val event = eventViewModel.event!!
+                    val club = clubsViewModel.club!!
 
                     Row(
                         modifier = Modifier
-                            .clip(
-                                RoundedCornerShape(15.dp)
-                            )
+                            .clip(RoundedCornerShape(15.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer)
                             .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        if (!event.eventPicture.isNullOrEmpty()) {
-                            eventViewModel.decodeBase64ToBitmap(event.eventPicture)
+                        if (!club.clubPicture.isNullOrEmpty()) {
+                            clubsViewModel.decodeBase64ToBitmap(club.clubPicture)
                                 ?.let { bitmap ->
                                     Image(
                                         bitmap = bitmap.asImageBitmap(),
-                                        contentDescription = "Event Image",
+                                        contentDescription = "Club Image",
                                         modifier = Modifier
                                             .size(150.dp)
                                             .clip(RoundedCornerShape(10.dp)),
@@ -177,7 +150,7 @@ fun EventScreenContent(
                                 .padding(15.dp)
                         ) {
                             Text(
-                                text = event.name,
+                                text = club.name,
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onBackground,
@@ -188,7 +161,7 @@ fun EventScreenContent(
                             Spacer(modifier = Modifier.height(15.dp))
 
                             Text(
-                                text = event.description,
+                                text = club.description,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center,
@@ -207,7 +180,7 @@ fun EventScreenContent(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     modifier = Modifier.clickable {
-                                        navController.navigate("eventUsers")
+                                        navController.navigate("clubMembers/${clubId}")
                                     }
                                 ) {
                                     Icon(
@@ -217,7 +190,7 @@ fun EventScreenContent(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = event.participants?.size?.toString() ?: "0",
+                                        text = club.participants.size.toString(),
                                         style = MaterialTheme.typography.bodySmall,
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.secondaryContainer
@@ -232,12 +205,12 @@ fun EventScreenContent(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Outlined.Lock,
-                                        contentDescription = "Event Type",
+                                        contentDescription = "Club Type",
                                         tint = MaterialTheme.colorScheme.secondaryContainer,
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = if (event.isOpen) "Open" else "Closed",
+                                        text = if (club.isOpen) "Open" else "Closed",
                                         style = MaterialTheme.typography.bodySmall,
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.secondaryContainer
@@ -253,11 +226,11 @@ fun EventScreenContent(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(15.dp)
                     ) {
-                        if (event.creator.id == authViewModel.currentUser.value!!.id) {
+                        if (club.creator.id == authViewModel.currentUser.value!!.id) {
                             EventClubScreenButton(
                                 title = "Manage",
                                 onClick = {
-                                    navController.navigate("manageEvent/${event.eventId}")
+                                    navController.navigate("manageClub/${clubId}")
                                 },
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                                 textColor = MaterialTheme.colorScheme.onBackground,
@@ -265,11 +238,11 @@ fun EventScreenContent(
                                 modifier = Modifier.weight(1f),
                                 textPadding = 5
                             )
-                        } else if (doesParticipate.value) {
+                        } else if (clubsViewModel.isParticipating) {
                             EventClubScreenButton(
-                                title = "Participating",
+                                title = "Joined",
                                 onClick = {
-                                    eventViewModel.onAlreadyParticipateModalOpen(true)
+                                    // clubsViewModel.showAlreadyJoinedDialog(true)
                                 },
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                                 textColor = MaterialTheme.colorScheme.primary,
@@ -279,19 +252,9 @@ fun EventScreenContent(
                             )
                         } else {
                             EventClubScreenButton(
-                                title = "Participate",
+                                title = "Join",
                                 onClick = {
-                                    eventViewModel.joinEvent(
-                                        eventId = event.eventId,
-                                        onSuccess = {
-                                            eventViewModel.onSetIsParticipating(true)
-                                            eventViewModel.onIsParticipateModalOpen(true)
-                                        },
-                                        onError = {
-                                            eventViewModel.onSetIsParticipating(false)
-                                            eventViewModel.onIsParticipateModalOpen(true)
-                                        }
-                                    )
+
                                 },
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 textColor = MaterialTheme.colorScheme.background,
@@ -304,7 +267,7 @@ fun EventScreenContent(
                         EventClubScreenButton(
                             title = "Info",
                             onClick = {
-                                eventViewModel.onEventInfoModalOpenChange(true)
+                                // clubsViewModel.showClubInfoDialog(true)
                             },
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             textColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -317,134 +280,105 @@ fun EventScreenContent(
                     Spacer(Modifier.height(20.dp))
 
                     Text(
-                        text = "Media",
+                        text = "Events",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondaryContainer
                     )
 
                     Spacer(Modifier.height(10.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(15.dp)
-                    ) {
-                        EventClubScreenButton(
-                            title = "0 Images",
-                            onClick = {},
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            textColor = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.weight(1f),
-                            textPadding = 10,
-                            borderColor = MaterialTheme.colorScheme.primaryContainer,
-                            fontWeight = FontWeight.Normal
-                        )
-
-                        EventClubScreenButton(
-                            title = "0 Videos",
-                            onClick = {},
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            textColor = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.weight(1f),
-                            textPadding = 10,
-                            borderColor = MaterialTheme.colorScheme.primaryContainer,
-                            fontWeight = FontWeight.Normal
-                        )
-                    }
                 }
             }
         }
-        if (eventViewModel.isParticipateModalOpen) {
-            eventViewModel.event?.let { event ->
-                ParticipateModal(
-                    event = event,
-                    onOk = {
-                        eventViewModel.onIsParticipateModalOpen(false)
-                    }
-                )
-            }
-        }
 
-        if(eventViewModel.alreadyParticipateModalOpen) {
-            EventScreenModal(
-                title = "Already Joined!",
-                text = "You are already participating in the event",
-                onDismiss = {
-                    eventViewModel.onAlreadyParticipateModalOpen(false)
-                },
-                onConfirm = {
-                    eventViewModel.onAlreadyParticipateModalOpen(false)
-                },
-                confirmTitle = "Undo"
+//        if (clubsViewModel.showJoinSuccessDialog.value) {
+//            AlertDialog(
+//                onDismissRequest = { clubsViewModel.showJoinSuccessDialog(false) },
+//                confirmButton = {
+//                    TextButton(
+//                        onClick = { clubsViewModel.showJoinSuccessDialog(false) }
+//                    ) {
+//                        Text("OK")
+//                    }
+//                },
+//                title = { Text("Success") },
+//                text = { Text("You have successfully joined the club!") }
+//            )
+//        }
+
+        /*        if (clubsViewModel.showJoinErrorDialog.value) {
+        AlertDialog(
+            onDismissRequest = { clubsViewModel.showJoinErrorDialog(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = { clubsViewModel.showJoinErrorDialog(false) }
+                ) {
+                    Text("OK")
+                }
+            },
+            title = { Text("Error") },
+            text = { Text("Failed to join the club. Please try again.") }
+        )
+    }
+
+    if (clubsViewModel.showAlreadyJoinedDialog.value) {
+        AlertDialog(
+            onDismissRequest = { clubsViewModel.showAlreadyJoinedDialog(false) },
+            confirmButton = {
+                TextButton(
+                    onClick = { clubsViewModel.showAlreadyJoinedDialog(false) }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        clubsViewModel.showAlreadyJoinedDialog(false)
+                    }
+                ) {
+                    Text("Leave", color = Color.Red)
+                }
+            },
+            title = { Text("Already Joined") },
+            text = { Text("You are already a member of this club.") }
+        )
+    }
+
+    if (clubsViewModel.showClubInfoDialog.value) {
+        clubsViewModel.newClub?.let { club ->
+            ClubInfoDialog(
+                club = club,
+                onDismiss = { clubsViewModel.showClubInfoDialog(false) }
             )
         }
-
-        if (eventViewModel.eventInfoModalOpen) {
-            eventViewModel.event?.let { event ->
-                EventInfoBottomModal(
-                    event = event,
-                    onDismiss = {
-                        eventViewModel.onEventInfoModalOpenChange(false)
-                    }
-                )
-            }
-        }
+    }*/
     }
 }
 
 @Composable
-fun EventScreenModal(
-    confirmTitle: String,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    title: String,
-    text: String,
-    modifier: Modifier = Modifier
+fun ClubInfoDialog(
+    club: Club,
+    onDismiss: () -> Unit
 ) {
     AlertDialog(
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
         onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text(
-                    text = "Ok",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onConfirm
-            ) {
-                Text(
-                    text = confirmTitle,
-                    color = Color.Red,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 14.sp
-                )
-            }
-        },
+        title = { Text(club.name) },
         text = {
-            Text(
-                text = text,
-                modifier = Modifier.padding(horizontal = 15.dp, vertical = 25.dp).fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Column {
+                Text("Category: ${club.category}")
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Tags: ${club.clubTags}")
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Created: ${club.createdAt}")
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Type: ${if (club.isOpen) "Open" else "Closed"}")
+            }
         },
-        title = {
-            Text(
-                text = title,
-                modifier = Modifier.padding(top = 15.dp).fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
         }
     )
 }

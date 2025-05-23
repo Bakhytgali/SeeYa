@@ -66,7 +66,7 @@ fun CreateEventScreen(
             {
                 EventTypeChoose(
                     onEventTypeSelected = {
-                        eventViewModel.onNewEventCategory(it.title)
+                        eventViewModel.onEventCategoryChange(it.title)
                         currentStep++
                     }
                 )
@@ -133,7 +133,7 @@ fun CreateEventScreen(
     Scaffold(
         topBar = {
             SimpleTopBar(
-                title = "New Club",
+                title = "New Event",
                 onClick = {
                     navOption()
                 }
@@ -174,7 +174,13 @@ fun CreateEventScreen(
                         Log.d("My Log", "Creating an Event...")
                         eventViewModel.createEvent(
                             onSuccess = {
-                                navController.popBackStack()
+                                navController.navigate("main") {
+                                    popUpTo("main") {
+                                        inclusive = false
+                                    }
+
+                                    launchSingleTop = true
+                                }
                                 eventViewModel.clearEntries()
                             },
                             onError = {

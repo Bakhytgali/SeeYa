@@ -12,12 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import okhttp3.internal.format
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Calendar
 
 @Composable
 fun CreateEventDetails(
@@ -74,17 +70,9 @@ fun CreateEventDetails(
             }
         )
 
-        val inputFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US)
-        val date = inputFormat.parse(eventDateTime.toString())
-
-        val outputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        val formattedDate = outputFormat.format(date)
-
         CustomTextField(
-            text = formattedDate,
-            onValueChange = {
-
-            },
+            text = eventDateTime.toString(), // Просто выводим как есть
+            onValueChange = { /* не нужно, так как поле только для чтения */ },
             placeholder = "Date",
             isActive = false,
             onClick = {
@@ -95,7 +83,13 @@ fun CreateEventDetails(
                         TimePickerDialog(
                             context,
                             { _, hour, minute ->
-                                val newDateTime = LocalDateTime.of(year, month + 1, dayOfMonth, hour, minute)
+                                val newDateTime = LocalDateTime.of(
+                                    year,
+                                    month + 1, // Месяцы в Calendar от 0 до 11
+                                    dayOfMonth,
+                                    hour,
+                                    minute
+                                )
                                 pickedDateTime = newDateTime
                                 onDateTimeChange(newDateTime)
                             },

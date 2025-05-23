@@ -63,9 +63,9 @@ fun EventCard(
                 )
 
                 Text(
-                    text = if(event.isOpen) "Open" else "Closed",
+                    text = event.eventTags,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if(event.isOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.secondaryContainer
                 )
             }
             Spacer(Modifier.height(10.dp))

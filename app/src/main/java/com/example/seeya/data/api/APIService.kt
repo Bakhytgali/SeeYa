@@ -1,11 +1,15 @@
 package com.example.seeya.data.api
 
 import com.example.seeya.data.model.Club
+import com.example.seeya.data.model.CreateClubRequest
+import com.example.seeya.data.model.CreateClubResponse
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.CreateEventResponse
 import com.example.seeya.data.model.Event
 import com.example.seeya.data.model.LoginResponse
 import com.example.seeya.data.model.LoginRequest
+import com.example.seeya.data.model.Participant
+import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.data.model.SearchResponse
 import com.example.seeya.data.model.SearchUser
 import com.example.seeya.data.model.SignInRequest
@@ -52,6 +56,12 @@ interface APIService {
         @GET("users/eventsCreated")
         suspend fun getMyEvents(@Header("Authorization") token: String): Response<List<Event>>
 
+        @GET("events/{eventId}/attendances")
+        suspend fun getAttendanceList(@Path("eventId") eventId: String): Response<List<Participant>>
+
+        @POST("users/check-attendance")
+        suspend fun checkAttendance(@Body request: QrDataModel): Response<List<Event>>
+
         // Join events
         @POST("users/join/{eventId}")
         suspend fun joinEvent(@Header("Authorization") token: String, @Path("eventId") eventId: String): Response<Unit>
@@ -63,7 +73,18 @@ interface APIService {
         @GET("/users/{userId}")
         suspend fun getUserById(@Path("userId") userId: String): Response<User>
 
+
+        // CLUBS
         @GET("/clubs")
         suspend fun getMyClubs(@Header("Authorization") token: String): Response<List<Club>>
+
+        @POST("/clubs/create")
+        suspend fun createClub(
+            @Header("Authorization") token: String,
+            @Body club: CreateClubRequest
+        ): String
+
+        @GET("/clubs/{clubId}")
+        suspend fun getClubById(@Path("clubId") clubId: String): Response<Club>
     }
 }

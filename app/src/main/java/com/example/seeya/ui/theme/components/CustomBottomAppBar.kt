@@ -20,24 +20,29 @@ import com.example.seeya.R
 import com.example.seeya.ui.theme.bgColor
 import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
+import com.example.seeya.viewmodel.search.SearchViewModel
 
 @Composable
 fun CustomBottomAppBar(
     authViewModel: AuthViewModel,
     navController: NavController,
+    searchViewModel: SearchViewModel,
     bottomBarViewModel: BottomBarViewModel,
     modifier: Modifier = Modifier
 ) {
     fun navigateTo(destination: String) {
-        if (bottomBarViewModel.activePage == destination) return
+        val baseRoute = destination.substringBefore("/")
+        val activeBaseRoute = bottomBarViewModel.activePage.substringBefore("/")
+
+        if (activeBaseRoute == baseRoute && baseRoute != "profile") return
 
         bottomBarViewModel.onActivePageChange(destination)
 
         navController.navigate(destination) {
             launchSingleTop = true
-            restoreState = true
+            restoreState = false
 
-            when (destination) {
+            when (baseRoute) {
                 "main" -> {
                     popUpTo("main") { inclusive = false }
                 }
@@ -126,6 +131,8 @@ fun CustomBottomAppBar(
                         )
                     },
                     navigate = {
+                        searchViewModel.clearGetUserState()
+
                         authViewModel.currentUser.value?.id?.let { userId ->
                             navigateTo("profile/$userId")
                         } ?: navigateTo("profile/failed")

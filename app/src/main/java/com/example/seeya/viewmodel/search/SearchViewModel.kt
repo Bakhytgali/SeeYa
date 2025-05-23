@@ -75,6 +75,10 @@ class SearchViewModel(
             }
         }
     }
+
+    fun clearGetUserState() {
+        _getUserState.value = GetUserState.Idle
+    }
 }
 
 sealed class SearchState {

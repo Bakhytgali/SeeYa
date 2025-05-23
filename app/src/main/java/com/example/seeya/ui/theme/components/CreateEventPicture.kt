@@ -37,7 +37,7 @@ fun CreateEventPicture(
         Spacer(modifier = Modifier.height(40.dp))
         Box(
             modifier = Modifier
-                .size(200.dp)
+                .size(250.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable {

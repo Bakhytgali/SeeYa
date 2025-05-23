@@ -6,6 +6,8 @@ import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.CreateEventResponse
 import com.example.seeya.data.model.Event
+import com.example.seeya.data.model.Participant
+import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.utils.TokenManager
 import retrofit2.Response
 import java.time.LocalDateTime
@@ -106,5 +108,22 @@ class EventRepository(private val context: Context) {
             e.printStackTrace()
             null
         }
+    }
+
+    suspend fun getAttendance(eventId: String): List<Participant> {
+        return try {
+            val response = api.getAttendanceList(eventId)
+            if (response.isSuccessful) {
+                response.body() ?: emptyList()
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun checkAttendance(qrDataModel: QrDataModel): Response<List<Event>> {
+        return api.checkAttendance(qrDataModel)
     }
 }

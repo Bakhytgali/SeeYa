@@ -4,20 +4,21 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.Telephony.Mms.Part
 import android.util.Base64
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.seeya.R
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
+import com.example.seeya.data.model.Participant
+import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.data.repository.EventRepository
 import com.example.seeya.utils.TokenManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,12 +85,8 @@ class EventViewModel(application: Application, private val repository: EventRepo
     }
 
     fun checkIfParticipating(userId: String) {
-        if(event!!.participants != null) {
-            _isParticipating.value = event!!.participants!!.any {
-                it.id == userId
-            }
-        } else if(event!!.participants == null) {
-            _isParticipating.value = false
+        _isParticipating.value = event!!.participants.any {
+            it.id == userId
         }
     }
 
@@ -101,6 +98,20 @@ class EventViewModel(application: Application, private val repository: EventRepo
 
     fun onIsParticipateModalOpen(newValue: Boolean) {
         isParticipateModalOpen = newValue
+    }
+
+    var alreadyParticipateModalOpen by mutableStateOf(false)
+        private set
+
+    fun onAlreadyParticipateModalOpen(newValue: Boolean) {
+        alreadyParticipateModalOpen = newValue
+    }
+
+    var sentParticipateModalOpen by mutableStateOf(false)
+        private set
+
+    fun sentParticipateModalOpen(newValue: Boolean) {
+        sentParticipateModalOpen = newValue
     }
 
     fun onEventTitleChange(newValue: String) {
@@ -195,6 +206,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
                     creator = userCreator,
                     location = eventLocation,
                     startDate = formatted,
+                    eventTags = eventTags
                 )
 
                 val response = repository.createEvent(newEvent)
@@ -281,6 +293,27 @@ class EventViewModel(application: Application, private val repository: EventRepo
                 onSuccess()
             } else {
                 onError("Failed to join the event!: ${response?.message() ?: "Unknown Error"}")
+            }
+        }
+    }
+
+    private val _attendanceList = MutableStateFlow<List<Participant>>(emptyList())
+    val attendanceList: StateFlow<List<Participant>> = _attendanceList.asStateFlow()
+
+    private val _loadingAttendance = MutableStateFlow(false)
+    val loadingAttendance: StateFlow<Boolean> = _loadingAttendance
+
+    fun checkAttendance(qrData: QrDataModel, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.checkAttendance(qrData)
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("Error code: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                onError(e.message ?: "Unknown error")
             }
         }
     }

@@ -10,16 +10,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.seeya.data.model.Club
 import com.example.seeya.data.model.ClubTypes
-import com.example.seeya.data.model.SearchUser
+import com.example.seeya.data.model.CreateClubRequest
+import com.example.seeya.data.model.Creator
 import com.example.seeya.data.repository.ClubsRepository
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
+import java.time.LocalDate
 
 class ClubsViewModel(application: Application, private val repository: ClubsRepository): AndroidViewModel(application) {
-    var club: Club? by mutableStateOf(null)
+    var club by mutableStateOf<Club?>(null)
         private set
 
     var myClubs: ClubsState by mutableStateOf(ClubsState.Idle)
@@ -102,12 +103,43 @@ class ClubsViewModel(application: Application, private val repository: ClubsRepo
         return Base64.encodeToString(byteArray, Base64.DEFAULT)
     }
 
-    fun createNewClub(
-        onSuccess: () -> Unit,
-        onError: () -> Unit,
-    ) {
+    var isLoading by mutableStateOf(false)
+    var isParticipating by mutableStateOf(false)
+    var newClub by mutableStateOf<Club?>(null)
 
+    var showJoinSuccessDialog by mutableStateOf(false)
+    var showJoinErrorDialog by mutableStateOf(false)
+    var showAlreadyJoinedDialog by mutableStateOf(false)
+    var showClubInfoDialog by mutableStateOf(false)
+
+    fun checkIfParticipating(userId: String) {
+        viewModelScope.launch {
+            isParticipating = club?.participants?.any { it.id == userId } ?: false
+        }
     }
+
+//
+//    fun leaveClub(clubId: String) {
+//        viewModelScope.launch {
+//            repository.leaveClub(clubId)
+//            isParticipating = false
+//        }
+//    }
+
+//    fun joinClub(clubId: String, onSuccess: () -> Unit, onError: () -> Unit) {
+//        viewModelScope.launch {
+//            try {
+//                val success = repository.joinClub(clubId)
+//                if (success) {
+//                    onSuccess()
+//                } else {
+//                    onError()
+//                }
+//            } catch (e: Exception) {
+//                onError()
+//            }
+//        }
+//    }
 
     fun getMyClubs() {
         viewModelScope.launch{
@@ -131,6 +163,50 @@ class ClubsViewModel(application: Application, private val repository: ClubsRepo
         }
     }
 
+    fun createClub(creator: Creator, onResult: (String?, String?) -> Unit) {
+        viewModelScope.launch {
+            val newClub = CreateClubRequest(
+                name = createClubTitle,
+                isOpen = createNewClubIsOpen,
+                clubTags = createNewClubTags,
+                clubPicture = createNewClubPicture,
+                createdAt = LocalDate.now(),
+                description = createNewClubDescription,
+                category = createClubCategory,
+                participants = emptyList(),
+                creator = creator
+            )
+
+            try {
+                val clubId = repository.createClub(newClub)
+                if (clubId.isNotEmpty()) {
+                    onResult(clubId, null)
+                } else {
+                    onResult(null, "Сервер не вернул ID клуба")
+                }
+            } catch (e: Exception) {
+                onResult(null, e.message ?: "Ошибка создания клуба")
+            }
+        }
+    }
+
+
+    fun fetchClubById(clubId: String) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                println("Fetching club with id: $clubId")
+                club = repository.getClubById(clubId)
+                println("Club fetched successfully: ${club != null}")
+            } catch (e: Exception) {
+                println("Error fetching club: ${e.message}")
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+
     fun clearEntries() {
         createClubTitle = ""
         createClubCategory = ""
@@ -138,6 +214,7 @@ class ClubsViewModel(application: Application, private val repository: ClubsRepo
         createNewClubIsOpen = true
         createNewClubPicture = ""
         createNewClubDescription = ""
+        imageBitmap = null
     }
 }
 

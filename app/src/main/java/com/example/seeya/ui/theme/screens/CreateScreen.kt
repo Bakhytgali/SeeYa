@@ -29,12 +29,14 @@ import com.example.seeya.data.model.CreateOptions
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
+import com.example.seeya.viewmodel.search.SearchViewModel
 
 @Composable
 fun CreateScreen(
     navController: NavController,
     bottomBarViewModel: BottomBarViewModel,
     authViewModel: AuthViewModel,
+    searchViewModel: SearchViewModel,
     modifier: Modifier = Modifier
 ) {
     val onClick: (CreateOptions) -> Unit = {
@@ -49,7 +51,8 @@ fun CreateScreen(
         title = "Create",
         navController = navController,
         bottomBarViewModel = bottomBarViewModel,
-        authViewModel = authViewModel
+        authViewModel = authViewModel,
+        searchViewModel = searchViewModel,
     ) { mod ->
         Box(
             modifier = mod

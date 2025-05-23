@@ -32,24 +32,16 @@ object TokenManager {
 
     fun saveUser(context: Context, user: User) {
         val userJson = Gson().toJson(user)
-
-        Log.d("TokenManager", "Saving User JSON: $userJson")
-
         getPrefs(context).edit().putString(USER_KEY, userJson).apply()
     }
 
     fun getUser(context: Context): User? {
         val userJson = getPrefs(context).getString(USER_KEY, null)
-
-        Log.d("TokenManager", "Raw JSON before parsing: $userJson") // 👀 Проверяем JSON перед парсингом
-
         return userJson?.let {
             try {
                 Gson().fromJson(it, User::class.java).also { parsedUser ->
-                    Log.d("TokenManager", "Parsed User: $parsedUser") // 👀 Проверяем, что id не null
                 }
             } catch (e: Exception) {
-                Log.e("TokenManager", "Ошибка парсинга User: ${e.message}")
                 null
             }
         }

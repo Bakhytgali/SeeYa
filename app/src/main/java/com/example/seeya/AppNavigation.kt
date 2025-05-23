@@ -10,14 +10,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.seeya.ui.theme.screens.AnimatedSplashScreen
+import com.example.seeya.ui.theme.screens.ClubScreen
 import com.example.seeya.ui.theme.screens.ClubsScreen
 import com.example.seeya.ui.theme.screens.CreateClubScreen
 import com.example.seeya.ui.theme.screens.CreateEventScreen
 import com.example.seeya.ui.theme.screens.CreateScreen
+import com.example.seeya.ui.theme.screens.EditMyProfileScreen
 import com.example.seeya.ui.theme.screens.EventScreen
 import com.example.seeya.ui.theme.screens.EventUsersPage
 import com.example.seeya.ui.theme.screens.LoginScreen
 import com.example.seeya.ui.theme.screens.MainScreen
+import com.example.seeya.ui.theme.screens.ManageEventScreen
 import com.example.seeya.ui.theme.screens.ProfileScreen
 import com.example.seeya.ui.theme.screens.RegisterScreen
 import com.example.seeya.ui.theme.screens.SearchScreen
@@ -56,7 +59,8 @@ fun AppNavigation(
                 navController,
                 eventViewModel,
                 authViewModel,
-                bottomBarViewModel
+                bottomBarViewModel,
+                searchViewModel = searchViewModel
             )
         }
         composable("search") {
@@ -72,7 +76,8 @@ fun AppNavigation(
                 navController = navController,
                 bottomBarViewModel = bottomBarViewModel,
                 authViewModel = authViewModel,
-                clubsViewModel = clubsViewModel
+                clubsViewModel = clubsViewModel,
+                searchViewModel = searchViewModel
             )
         }
         composable("createEvent") {
@@ -90,8 +95,32 @@ fun AppNavigation(
             CreateScreen(
                 navController = navController,
                 bottomBarViewModel = bottomBarViewModel,
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
+                searchViewModel = searchViewModel
             )
+        }
+        composable("manageEvent/{eventId}") {
+            val eventId = it.arguments?.getString("eventId")
+            if(!eventId.isNullOrEmpty()) {
+                ManageEventScreen(
+                    eventId = eventId,
+                    navController = navController,
+                    eventViewModel = eventViewModel
+                )
+            }
+        }
+        composable("clubs/{clubId}") { navBackStackEntry ->
+            val clubId = navBackStackEntry.arguments?.getString("clubId")
+
+            if(!clubId.isNullOrEmpty()) {
+                ClubScreen(
+                    navController = navController,
+                    clubsViewModel = clubsViewModel,
+                    authViewModel = authViewModel,
+                    clubId = clubId,
+                    bottomBarViewModel = bottomBarViewModel
+                )
+            }
         }
         composable("profile/{userId}") { navBackStackEntry ->
             val userId = navBackStackEntry.arguments?.getString("userId")
@@ -112,6 +141,13 @@ fun AppNavigation(
             EventUsersPage(
                 eventViewModel = eventViewModel,
                 bottomBarViewModel = bottomBarViewModel,
+                navController = navController,
+                authViewModel = authViewModel,
+                searchViewModel = searchViewModel
+            )
+        }
+        composable("editProfile") {
+            EditMyProfileScreen(
                 navController = navController,
                 authViewModel = authViewModel
             )

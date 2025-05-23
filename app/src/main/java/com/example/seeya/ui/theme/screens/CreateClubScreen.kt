@@ -51,6 +51,7 @@ import androidx.navigation.NavController
 import com.example.seeya.data.model.ClubCategories
 import com.example.seeya.ui.theme.components.ClubCustomBottomSheet
 import com.example.seeya.data.model.ClubTypes
+import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.EventTags
 import com.example.seeya.ui.theme.components.CreateClubSoothe
 import com.example.seeya.ui.theme.components.CustomTextField
@@ -161,7 +162,7 @@ fun CreateClubScreen(
     Scaffold(
         topBar = {
             SimpleTopBar(
-                title = "New Event",
+                title = "New Club",
                 onClick = {
                     navOption()
                 }
@@ -178,7 +179,7 @@ fun CreateClubScreen(
             CreateClubSoothe(
                 title = when (currentStep) {
                     0 -> "What is your goal?"
-                    1 -> "Name your event"
+                    1 -> "Name your club"
                     2 -> "Select subject"
                     3 -> "Choose a picture"
                     4 -> "Finally, fill the details"
@@ -199,17 +200,24 @@ fun CreateClubScreen(
                         currentStep++
                         Log.d("MyLog", "$currentStep")
                     } else if (currentStep == 4) {
-                        Log.d("My Log", "Creating an Event...")
-                        clubsViewModel.createNewClub(
-                            onSuccess = {
-                                navController.popBackStack()
-                                clubsViewModel.clearEntries()
-                            },
-                            onError = {
-                                Log.d("My Log", "Event Not Created")
-                                currentStep = 0
-                            }
+                        Log.d("My Log", "Creating a Club...")
+                        val creator = Creator(
+                            id = authViewModel.currentUser.value?.id!!,
+                            name = authViewModel.currentUser.value?.name!!,
+                            surname = authViewModel.currentUser.value?.surname!!,
+                            username = authViewModel.currentUser.value?.username!!,
+                            rating = authViewModel.currentUser.value?.rating
                         )
+                        clubsViewModel.createClub(creator = creator) { clubId, error ->
+                            if(!clubId.isNullOrEmpty()) {
+                                Log.d("My Log", "$clubId")
+                                navController.navigate("clubs/$clubId") {
+                                    launchSingleTop = true
+                                }
+                            } else {
+                                Log.d("Event Creator: ", "Error!: $error")
+                            }
+                        }
                     }
                 },
                 clubNameIsFilled = clubsViewModel.createClubTitle.isNotBlank(),
@@ -231,9 +239,9 @@ fun ClubCategoryChoose(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(15.dp)
     ) {
-        ClubCategories.entries.forEach { eventType ->
-            ClubCategoryCard(eventType, onClick = {
-                onClubCategorySelected(eventType)
+        ClubCategories.entries.forEach { clubType ->
+            ClubCategoryCard(clubType, onClick = {
+                onClubCategorySelected(clubType)
             })
         }
     }
@@ -317,7 +325,7 @@ fun NameClub(
             CustomTextField(
                 text = text,
                 onValueChange = onValueChange,
-                placeholder = "Event Title",
+                placeholder = "Club Name",
                 modifier = modifier.fillMaxWidth()
             )
         }
@@ -330,7 +338,7 @@ fun NameClub(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Event Type",
+                    text = "Club Type",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondaryContainer
                 )
@@ -422,23 +430,23 @@ fun ListOfClubTags(
         verticalArrangement = Arrangement.spacedBy(15.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(EventTags.entries) { eventTag ->
+        items(EventTags.entries) { clubTag ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        clubsViewModel.onNewClubTagsChange(eventTag.title)
+                        clubsViewModel.onNewClubTagsChange(clubTag.title)
                     },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = eventTag.title,
+                    text = clubTag.title,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Start
                 )
-                if (clubsViewModel.createNewClubTags == eventTag.title) {
+                if (clubsViewModel.createNewClubTags == clubTag.title) {
                     Icon(
                         imageVector = Icons.Filled.CheckCircle,
                         contentDescription = "Tag is Chosen",
@@ -520,7 +528,7 @@ fun CreateClubDetails(
             )
             CustomTextField(
                 text = description,
-                placeholder = "Event Description",
+                placeholder = "Club Description",
                 onValueChange = onDescriptionChange,
                 numberOfLines = 4,
                 modifier = Modifier

@@ -59,6 +59,7 @@ fun SearchScreen(
         title = "Search",
         navController = navController,
         bottomBarViewModel = bottomBarViewModel,
+        searchViewModel = searchViewModel,
         authViewModel = authViewModel,
         content = { mod ->
             SearchScreenContent(

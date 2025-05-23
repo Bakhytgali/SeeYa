@@ -23,7 +23,8 @@ fun CustomTextField(
     isActive: Boolean = true,
     onClick: () -> Unit = {},
     trailingIcon: (@Composable () -> Unit)? = null,
-    leadingIcon: (@Composable () -> Unit)? = null
+    leadingIcon: (@Composable () -> Unit)? = null,
+    limit: Int = 100,
 ) {
 
     OutlinedTextField(
@@ -39,7 +40,11 @@ fun CustomTextField(
             fontSize = 16.sp,
             fontFamily = Poppins
         ),
-        onValueChange = onValueChange,
+        onValueChange = {
+            if(text.length <= limit) {
+                onValueChange(it)
+            }
+        },
         maxLines = numberOfLines,
         shape = RoundedCornerShape(10.dp),
         colors = OutlinedTextFieldDefaults.colors(
