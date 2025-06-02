@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
 class BottomBarViewModel: ViewModel() {
-    var activePage by mutableStateOf("home")
+    var activePage by mutableStateOf("main")
         private set
 
     fun onActivePageChange(newValue: String) {

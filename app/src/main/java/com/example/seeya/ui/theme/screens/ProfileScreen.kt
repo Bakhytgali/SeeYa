@@ -47,6 +47,7 @@ import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.ui.theme.components.ProfileBottomModal
 import com.example.seeya.ui.theme.components.SeeYaLogo
 import com.example.seeya.viewmodel.BottomBarViewModel
+import com.example.seeya.viewmodel.ThemeViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.search.GetUserState
 import com.example.seeya.viewmodel.search.SearchViewModel
@@ -60,7 +61,8 @@ fun ProfileScreen(
     searchViewModel: SearchViewModel,
     bottomBarViewModel: BottomBarViewModel,
     navController: NavController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    themeViewModel: ThemeViewModel
 ) {
     val currentUser by authViewModel.currentUser.observeAsState()
     val getUserState by searchViewModel.getUserState.collectAsState()
@@ -147,7 +149,8 @@ fun ProfileScreen(
                         authViewModel = authViewModel,
                         modifier = mod,
                         isCurrentUserProfile = isCurrentUserProfile,
-                        navController = navController
+                        navController = navController,
+                        themeViewModel = themeViewModel
                     )
                 }
             }
@@ -161,7 +164,8 @@ fun ProfileScreenContent(
     user: User?,
     authViewModel: AuthViewModel,
     modifier: Modifier = Modifier,
-    isCurrentUserProfile: Boolean = false
+    isCurrentUserProfile: Boolean = false,
+    themeViewModel: ThemeViewModel,
 ) {
     val userPicture = if (user?.profilePicture != null)
         authViewModel.decodeBase64ToBitmap(user.profilePicture)
@@ -196,8 +200,8 @@ fun ProfileScreenContent(
                             launchSingleTop = true
                         }
                     },
-                    onDeleteAccount =  {
-
+                    onThemeSwitch =  {
+                        themeViewModel.onDarkModeChange()
                     },
                     onExitProfile =  {
                         navController.navigate("login") {
@@ -266,6 +270,7 @@ fun ProfileScreenContent(
                         Text(
                             text = "@${user.username}",
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 20.sp,
                         )
 
@@ -309,7 +314,7 @@ fun ProfileScreenContent(
                     horizontalArrangement = Arrangement.spacedBy(25.dp)
                 ) {
                     ProfileInfoWidget(
-                        widgetInfo = "4.9",
+                        widgetInfo = user.rating.toString(),
                         widgetTitle = "Organizer Rating",
                         widgetInfoColor = Color(0xFF8338ec),
                         modifier = Modifier.weight(1f)

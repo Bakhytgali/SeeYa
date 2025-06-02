@@ -17,4 +17,11 @@ val bgColor = Color(0xFFFFFFFF) // White, for background
 val primaryColor = Color(0xFF0C0021) // Primary Blue
 val secondaryColor = Color(0xFF551ADE) // Secondary Purple
 val primaryContainerColor = Color(0xFFF5F5F7)
-val grayText = Color(0xFF9D9D9D)
+val secondaryContainer = Color(0xFF9D9D9D)
+
+
+val darkBgColor = Color(0xFF121212) // Dark background
+val darkPrimaryColor = Color(0xFFE0D7FF) // Light text on dark (was primary blue)
+val darkSecondaryColor = Color(0xFFC2B8FF) // Lighter purple for contrast
+val darkPrimaryContainerColor = Color(0xFF1E1E1E) // Darker container
+val darkSecondaryContainer = Color(0xFF6D6D6D) // Muted grey for secondary container

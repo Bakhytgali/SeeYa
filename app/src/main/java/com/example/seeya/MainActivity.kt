@@ -10,6 +10,7 @@ import com.example.seeya.data.repository.ClubsRepository
 import com.example.seeya.data.repository.EventRepository
 import com.example.seeya.data.repository.SearchRepository
 import com.example.seeya.ui.theme.SeeYaTheme
+import com.example.seeya.viewmodel.ThemeViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModelFactory
 import com.example.seeya.viewmodel.clubs.ClubsViewModel
@@ -49,9 +50,27 @@ class MainActivity : ComponentActivity() {
             ClubsViewModelFactory(application, ClubsRepository(application))
         )[ClubsViewModel::class.java]
 
+        val startDestination = intent?.data?.let { uri ->
+            val eventId = uri.lastPathSegment
+            if (eventId != null) {
+                "event/$eventId"
+            } else {
+                "splash"
+            }
+        } ?: "splash"
+
+        val themeViewModel: ThemeViewModel = ThemeViewModel(application)
+
         setContent {
-            SeeYaTheme {
-                AppNavigation(authViewModel, eventViewModel, searchViewModel, clubsViewModel)
+            SeeYaTheme(darkTheme = themeViewModel.isDarkMode.value) {
+                AppNavigation(
+                    startDestination = startDestination,
+                    authViewModel = authViewModel,
+                    eventViewModel = eventViewModel,
+                    searchViewModel = searchViewModel,
+                    clubsViewModel = clubsViewModel,
+                    themeViewModel = themeViewModel
+                )
             }
         }
     }

@@ -179,7 +179,12 @@ fun MainScreenContent(
                                         }
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    Text(text = tag.title)
+                                    Text(
+                                        text = tag.title,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontSize = 14.sp
+                                    )
                                 }
                             },
                             onClick = {

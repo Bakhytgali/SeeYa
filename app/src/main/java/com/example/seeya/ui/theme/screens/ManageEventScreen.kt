@@ -1,5 +1,6 @@
 package com.example.seeya.ui.theme.screens
 
+import android.app.Application
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,12 +24,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,12 +47,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.seeya.data.model.EventApplication
 import com.example.seeya.data.model.Participant
 import com.example.seeya.data.model.QrCodeData
 import com.example.seeya.data.model.QrDataModel
@@ -111,10 +120,15 @@ fun ManageEventScreen(
 
     LaunchedEffect(pagerState.currentPage) {
         manageOption = manageOptions[pagerState.currentPage]
+
     }
 
     LaunchedEffect(manageOption) {
         pagerState.animateScrollToPage(manageOptions.indexOf(manageOption))
+
+        if (manageOption == "Info" && !eventViewModel.event?.isOpen!!) {
+            eventViewModel.loadEventApplications(eventId)
+        }
     }
 
     Scaffold(
@@ -190,7 +204,18 @@ fun ManageEventScreen(
                         .weight(1f)
                 ) { page ->
                     when (page) {
-                        0 -> {}
+                        0 -> {
+                            ManageApplications(
+                                applicants = eventViewModel.applications,
+                                loading = eventViewModel.loadingApplications,
+                                onAccept = {
+                                    eventViewModel.acceptApplication(it)
+                                },
+                                onReject = {
+                                    eventViewModel.rejectApplication(it)
+                                }
+                            )
+                        }
                         1 -> {
                             ManageEventAttendance(
                                 scanLauncher = scanLauncher,
@@ -205,6 +230,54 @@ fun ManageEventScreen(
         }
     }
 }
+
+@Composable
+fun ManageApplications(
+    onReject: (String) -> Unit,
+    onAccept: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    applicants: StateFlow<List<EventApplication>>,
+    loading: StateFlow<Boolean>,
+) {
+    val loadingState = loading.collectAsState()
+    val applicantsList = applicants.collectAsState()
+
+    Column(
+        modifier = modifier.fillMaxWidth().fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            "Applications",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(top = 20.dp)
+        )
+
+        if (loadingState.value) {
+            CircularProgressIndicator()
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 20.dp)
+            ) {
+                itemsIndexed(applicantsList.value) { index, applicant ->
+                    AttendantCard(
+                        index = index + 1,
+                        user = applicant,
+                        onAccept = {
+                            onAccept(it)
+                        },
+                        onReject = {
+                            onReject(it)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun ManageEventAttendance(
@@ -267,13 +340,7 @@ fun ManageEventAttendance(
                     verticalArrangement = Arrangement.spacedBy(15.dp)
                 ) {
                     itemsIndexed(attendanceList.value.reversed()) { index, attendant ->
-                        AttendantCard(
-                            index = index,
-                            user = attendant,
-                            onClick = {
-
-                            }
-                        )
+                        ParticipantCard(participant = attendant, index = index + 1)
                     }
                 }
             }
@@ -283,9 +350,10 @@ fun ManageEventAttendance(
 
 @Composable
 fun AttendantCard(
-    onClick: (String) -> Unit,
-    user: Participant,
+    user: EventApplication,
     index: Int,
+    onReject: (String) -> Unit,
+    onAccept: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -302,28 +370,97 @@ fun AttendantCard(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
-            ),
-            onClick = { onClick(user.id) }
+            )
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = user.username,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
+                Column(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp).weight(1f)
+                ) {
+                    Text(
+                        text = "@${user.applicant?.username}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
 
-                Text(
-                    text = "${user.name} ${user.surname}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                )
+                    Text(
+                        text = "${user.applicant?.name} ${user.applicant?.surname}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        user.id?.let { onAccept(it) }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = "",
+                        tint = Color.Green,
+                    )
+                }
+
+                Spacer(Modifier.width(15.dp))
+
+                IconButton(
+                    onClick = {
+                        user.id?.let { onReject(it) }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = "",
+                        tint = Color.Red,
+                    )
+                }
             }
         }
     }
 }
+
+@Composable
+fun ParticipantCard(
+    participant: Participant,
+    index: Int,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "$index. ${participant.username ?: "Unknown"}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                contentDescription = "Attended",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
 
 fun scan(scanLauncher: ActivityResultLauncher<ScanOptions>) {
     scanLauncher.launch(ScanOptions())

@@ -32,6 +32,7 @@ fun ClubBottomModalSheetCard(
         Column {
             Text(
                 text = clubTypes.type,
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleSmall
             )
             Text(

@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.seeya.data.model.UpdateProfileRequest
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.CustomTitleButton
 import com.example.seeya.ui.theme.components.SeeYaLogo
@@ -87,7 +88,8 @@ fun EditMyProfileScreen(
 
         EditMyProfileScreenContent(
             modifier = Modifier.padding(paddingValues),
-            authViewModel = authViewModel
+            authViewModel = authViewModel,
+            navController = navController
         )
     }
 }
@@ -95,6 +97,7 @@ fun EditMyProfileScreen(
 @Composable
 fun EditMyProfileScreenContent(
     authViewModel: AuthViewModel,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     val user = authViewModel.currentUser
@@ -102,6 +105,7 @@ fun EditMyProfileScreenContent(
     var username by remember { mutableStateOf(user.value?.username ?: "") }
     var name by remember { mutableStateOf(user.value?.name ?: "") }
     var surname by remember { mutableStateOf(user.value?.surname ?: "") }
+    var password by remember { mutableStateOf("") }
 
     var picture by remember {
         mutableStateOf(user.value?.profilePicture)
@@ -127,6 +131,42 @@ fun EditMyProfileScreenContent(
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
+        var showSuccessDialog by remember { mutableStateOf(false) }
+        var showErrorDialog by remember { mutableStateOf<String?>(null) }
+
+        if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = { showSuccessDialog = false },
+                title = { Text("Success") },
+                text = { Text("Your profile was updated successfully!") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showSuccessDialog = false
+                        navController.popBackStack()
+                    }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+        showErrorDialog?.let { errorMsg ->
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = null },
+                title = { Text("Error") },
+                text = { Text(errorMsg) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showErrorDialog = null
+                        navController.popBackStack()
+                    }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
@@ -150,9 +190,7 @@ fun EditMyProfileScreenContent(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                } ?: SeeYaLogo(
-                    fontSize = 74
-                )
+                } ?: SeeYaLogo(fontSize = 74)
             }
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -169,14 +207,18 @@ fun EditMyProfileScreenContent(
                 limit = 20,
                 modifier = Modifier.fillMaxWidth()
             ) { username = it.lowercase() }
+
             Spacer(Modifier.height(25.dp))
+
             CustomTextFieldWithCounter(
                 placeholder = "new name",
                 text = name,
                 limit = 20,
                 modifier = Modifier.fillMaxWidth()
             ) { name = it }
+
             Spacer(Modifier.height(25.dp))
+
             CustomTextFieldWithCounter(
                 placeholder = "new surname",
                 text = surname,
@@ -184,20 +226,46 @@ fun EditMyProfileScreenContent(
                 modifier = Modifier.fillMaxWidth()
             ) { surname = it }
 
+            Spacer(Modifier.height(25.dp))
+
+            CustomTextFieldWithCounter(
+                placeholder = "new password (optional)",
+                text = password,
+                limit = 32,
+                modifier = Modifier.fillMaxWidth()
+            ) { password = it }
+
             Spacer(Modifier.weight(1f))
 
             CustomTitleButton(
                 title = "Edit",
                 onClick = {
-
+                    val updatedUser = UpdateProfileRequest(
+                        username = if(user.value?.username == username) null else username,
+                        name = if(user.value?.name == name) null else name,
+                        profilePicture = if(user.value?.profilePicture == picture) null else picture,
+                        surname = if(user.value?.surname == surname) null else surname,
+                        password = password.ifBlank { null }
+                    )
+                    authViewModel.updateAccountInfo(
+                        request = updatedUser,
+                        onSuccess = {
+                            showSuccessDialog = true
+                        },
+                        onError = { message ->
+                            showErrorDialog = message
+                        }
+                    )
                 },
                 isActive = true
             )
+
 
             Spacer(Modifier.height(30.dp))
         }
     }
 }
+
 
 @Composable
 fun CustomTextFieldWithCounter(

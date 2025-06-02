@@ -6,9 +6,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.seeya.ui.theme.screens.AnimatedSplashScreen
 import com.example.seeya.ui.theme.screens.ClubScreen
 import com.example.seeya.ui.theme.screens.ClubsScreen
@@ -18,6 +21,7 @@ import com.example.seeya.ui.theme.screens.CreateScreen
 import com.example.seeya.ui.theme.screens.EditMyProfileScreen
 import com.example.seeya.ui.theme.screens.EventScreen
 import com.example.seeya.ui.theme.screens.EventUsersPage
+import com.example.seeya.ui.theme.screens.ForgotPasswordScreen
 import com.example.seeya.ui.theme.screens.LoginScreen
 import com.example.seeya.ui.theme.screens.MainScreen
 import com.example.seeya.ui.theme.screens.ManageEventScreen
@@ -25,6 +29,7 @@ import com.example.seeya.ui.theme.screens.ProfileScreen
 import com.example.seeya.ui.theme.screens.RegisterScreen
 import com.example.seeya.ui.theme.screens.SearchScreen
 import com.example.seeya.viewmodel.BottomBarViewModel
+import com.example.seeya.viewmodel.ThemeViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
 import com.example.seeya.viewmodel.clubs.ClubsViewModel
 import com.example.seeya.viewmodel.event.EventViewModel
@@ -35,10 +40,11 @@ fun AppNavigation(
     authViewModel: AuthViewModel,
     eventViewModel: EventViewModel,
     searchViewModel: SearchViewModel,
-    clubsViewModel: ClubsViewModel
+    clubsViewModel: ClubsViewModel,
+    themeViewModel: ThemeViewModel,
+    startDestination: String
 ) {
     val navController = rememberNavController()
-    val startDestination = "splash"
 
     val bottomBarViewModel: BottomBarViewModel = viewModel()
 
@@ -101,7 +107,7 @@ fun AppNavigation(
         }
         composable("manageEvent/{eventId}") {
             val eventId = it.arguments?.getString("eventId")
-            if(!eventId.isNullOrEmpty()) {
+            if (!eventId.isNullOrEmpty()) {
                 ManageEventScreen(
                     eventId = eventId,
                     navController = navController,
@@ -112,7 +118,7 @@ fun AppNavigation(
         composable("clubs/{clubId}") { navBackStackEntry ->
             val clubId = navBackStackEntry.arguments?.getString("clubId")
 
-            if(!clubId.isNullOrEmpty()) {
+            if (!clubId.isNullOrEmpty()) {
                 ClubScreen(
                     navController = navController,
                     clubsViewModel = clubsViewModel,
@@ -133,7 +139,8 @@ fun AppNavigation(
                     userId = userId,
                     navController = navController,
                     bottomBarViewModel = bottomBarViewModel,
-                    authViewModel = authViewModel
+                    authViewModel = authViewModel,
+                    themeViewModel = themeViewModel
                 )
             }
         }
@@ -146,13 +153,23 @@ fun AppNavigation(
                 searchViewModel = searchViewModel
             )
         }
+        composable("forgotPassword") {
+            ForgotPasswordScreen(
+                authViewModel = authViewModel,
+                navController = navController
+            )
+        }
         composable("editProfile") {
             EditMyProfileScreen(
                 navController = navController,
                 authViewModel = authViewModel
             )
         }
-        composable("event/{eventId}") { backStackEntry ->
+        composable(
+            "event/{eventId}",
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType }),
+            deepLinks = listOf(navDeepLink { uriPattern = "seeya://event/{eventId}" })
+        ) { backStackEntry ->
             val eventId = backStackEntry.arguments?.getString("eventId")
             if (eventId != null) {
                 EventScreen(

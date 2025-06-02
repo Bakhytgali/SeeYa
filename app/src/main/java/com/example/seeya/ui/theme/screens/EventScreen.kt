@@ -1,5 +1,6 @@
 package com.example.seeya.ui.theme.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +27,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -76,6 +80,7 @@ fun EventScreenContent(
     eventViewModel: EventViewModel,
     modifier: Modifier = Modifier
 ) {
+
     LaunchedEffect(Unit) {
         eventViewModel.getEvent(
             eventId,
@@ -188,7 +193,7 @@ fun EventScreenContent(
                             Spacer(modifier = Modifier.height(15.dp))
 
                             Text(
-                                text = event.description,
+                                text = event.eventTags,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center,
@@ -329,7 +334,7 @@ fun EventScreenContent(
                         horizontalArrangement = Arrangement.spacedBy(15.dp)
                     ) {
                         EventClubScreenButton(
-                            title = "0 Images",
+                            title = "Chat Link",
                             onClick = {},
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             textColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -339,9 +344,16 @@ fun EventScreenContent(
                             fontWeight = FontWeight.Normal
                         )
 
+                        val clipboardManager = LocalClipboardManager.current
+                        val context = LocalContext.current
+
                         EventClubScreenButton(
-                            title = "0 Videos",
-                            onClick = {},
+                            title = "Copy Link",
+                            onClick = {
+                                val eventLink = "https://seeya.app/event/${eventViewModel.event?.eventId ?: ""}"
+                                clipboardManager.setText(AnnotatedString(eventLink))
+                                Toast.makeText(context, "Link copied to clipboard!", Toast.LENGTH_SHORT).show()
+                            },
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             textColor = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.weight(1f),

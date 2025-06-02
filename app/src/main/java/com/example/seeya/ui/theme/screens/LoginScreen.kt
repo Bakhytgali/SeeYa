@@ -28,6 +28,21 @@ fun LoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
+    var showErrorDialog by remember { mutableStateOf(false) }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Login Failed") },
+            text = { Text("Incorrect email or password. Please try again.") },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -47,7 +62,8 @@ fun LoginScreen(
 
             Text(
                 text = "Sign In",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -55,52 +71,11 @@ fun LoginScreen(
             Text(
                 text = "Welcome back!",
                 style = MaterialTheme.typography.bodyMedium,
-                color = primaryColor,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(40.dp))
-
-            Button(
-                onClick = {
-                    // TODO
-                },
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(5.dp)
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.google_logo),
-                        contentDescription = "Google Logo Icon",
-                        modifier = Modifier.size(30.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Text(
-                        text = "Google",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(15.dp))
-
-            Text(
-                text = "or",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.secondaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(15.dp))
 
             CustomTextField(
                 text = authViewModel.loginText,
@@ -121,7 +96,8 @@ fun LoginScreen(
                     authViewModel.onLoginPasswordChange(it)
                     authViewModel.setErrorValue(false)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isPassword = true
             )
 
             if (authViewModel.isError) {
@@ -136,7 +112,9 @@ fun LoginScreen(
 
             TextButton(
                 onClick = {
-                    // TODO
+                    navController.navigate("forgotPassword") {
+                        restoreState = true
+                    }
                 }
             ) {
                 Text(
@@ -160,10 +138,14 @@ fun LoginScreen(
                             onSuccess = {
                                 navController.navigate("main") {
                                     popUpTo(0) { inclusive = true }
+                                    restoreState = false
                                 }
+                            },
+                            onFailure = {
+                                showErrorDialog = true
                             }
                         )
-                        Log.d("LoginScreen", "Login successful for ${authViewModel.loginText}")
+                        Log.d("LoginScreen", "Login attempted for ${authViewModel.loginText}")
                     }
                 }
             )
@@ -198,4 +180,5 @@ fun LoginScreen(
         }
     }
 }
+
 

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,10 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.seeya.data.model.Event
-import com.example.seeya.ui.theme.Unbounded
-import com.example.seeya.ui.theme.grayText
-import com.example.seeya.ui.theme.primaryContainerColor
-import com.example.seeya.viewmodel.BottomBarViewModel
+import com.example.seeya.ui.theme.secondaryContainer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -83,7 +79,7 @@ fun EventCard(
             Text(
                 text = event.location,
                 fontSize = 13.sp,
-                color = grayText
+                color = secondaryContainer
             )
         }
     }

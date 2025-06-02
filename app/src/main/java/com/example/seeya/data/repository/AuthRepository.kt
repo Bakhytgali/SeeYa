@@ -6,6 +6,8 @@ import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.LoginResponse
 import com.example.seeya.data.model.LoginRequest
 import com.example.seeya.data.model.SignInRequest
+import com.example.seeya.data.model.UpdateProfileRequest
+import com.example.seeya.data.model.User
 import com.example.seeya.data.model.VerifyCodeRequest
 import com.example.seeya.data.model.VerifyEmailRequest
 import com.example.seeya.utils.TokenManager
@@ -62,4 +64,25 @@ class AuthRepository(private val context: Context) {
         val response = api.authVerifyCode(request)
         return response.isSuccessful && response.code() == 200
     }
+
+    suspend fun restorePassword(email: String): Response<Unit> {
+        return api.restorePassword(email)
+    }
+
+    suspend fun updateAccountInfo(token: String, request: UpdateProfileRequest): Result<User> {
+        return try {
+            val response = api.updateAccountInfo("Bearer $token", request)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Result.success(it)
+                } ?: Result.failure(Exception("Empty response body"))
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Unknown error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 }

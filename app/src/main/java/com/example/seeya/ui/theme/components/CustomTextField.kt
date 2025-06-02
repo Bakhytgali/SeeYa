@@ -1,14 +1,21 @@
 package com.example.seeya.ui.theme.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.seeya.ui.theme.Poppins
@@ -22,10 +29,18 @@ fun CustomTextField(
     numberOfLines: Int = 1,
     isActive: Boolean = true,
     onClick: () -> Unit = {},
-    trailingIcon: (@Composable () -> Unit)? = null,
-    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable (() -> Unit))? = null,
+    leadingIcon: (@Composable (() -> Unit))? = null,
+    isPassword: Boolean = false,
     limit: Int = 100,
 ) {
+    var isPasswordVisible by remember { mutableStateOf(false) }
+
+    val visualTransformation = if (isPassword && !isPasswordVisible) {
+        PasswordVisualTransformation()
+    } else {
+        VisualTransformation.None
+    }
 
     OutlinedTextField(
         value = text,
@@ -41,7 +56,7 @@ fun CustomTextField(
             fontFamily = Poppins
         ),
         onValueChange = {
-            if(text.length <= limit) {
+            if (it.length <= limit) {
                 onValueChange(it)
             }
         },
@@ -58,10 +73,24 @@ fun CustomTextField(
             disabledTextColor = MaterialTheme.colorScheme.onBackground,
         ),
         enabled = isActive,
-        modifier = modifier.clickable {
-            onClick()
+        modifier = modifier.clickable { onClick() },
+        trailingIcon = {
+            when {
+                isPassword -> {
+                    Icon(
+                        imageVector = if (isPasswordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                        contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                        tint = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .clickable { isPasswordVisible = !isPasswordVisible }
+                    )
+                }
+
+                trailingIcon != null -> trailingIcon()
+            }
         },
-        trailingIcon = trailingIcon,
-        leadingIcon = leadingIcon
+        leadingIcon = leadingIcon,
+        visualTransformation = visualTransformation
     )
 }

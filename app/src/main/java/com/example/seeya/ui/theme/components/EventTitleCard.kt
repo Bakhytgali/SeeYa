@@ -2,14 +2,11 @@ package com.example.seeya.ui.theme.components
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Build
 import android.util.Base64
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,20 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
-import com.example.seeya.data.model.Participant
 import com.example.seeya.ui.theme.Poppins
 import com.example.seeya.ui.theme.Unbounded
-import com.example.seeya.ui.theme.grayText
+import com.example.seeya.ui.theme.secondaryContainer
 import com.example.seeya.ui.theme.primaryContainerColor
-import kotlinx.coroutines.CoroutineStart
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Date
 
 @Composable
 fun EventTitleCard(
@@ -94,7 +84,7 @@ fun EventTitleCard(
                 fontSize = 14.sp,
                 fontFamily = Poppins,
                 textAlign = TextAlign.Center,
-                color = grayText
+                color = secondaryContainer
             )
         }
     }

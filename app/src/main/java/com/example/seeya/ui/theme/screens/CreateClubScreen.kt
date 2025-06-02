@@ -518,7 +518,7 @@ fun CreateClubDetails(
 
         Column {
             Text(
-                text = "0/80",
+                text = "${description.length}/40",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier
@@ -529,7 +529,11 @@ fun CreateClubDetails(
             CustomTextField(
                 text = description,
                 placeholder = "Club Description",
-                onValueChange = onDescriptionChange,
+                onValueChange = {
+                    if(description.length <= 40) {
+                        onDescriptionChange(it)
+                    }
+                },
                 numberOfLines = 4,
                 modifier = Modifier
                     .height(150.dp)

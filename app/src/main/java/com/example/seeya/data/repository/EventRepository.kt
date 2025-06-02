@@ -6,6 +6,7 @@ import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.CreateEventResponse
 import com.example.seeya.data.model.Event
+import com.example.seeya.data.model.EventApplication
 import com.example.seeya.data.model.Participant
 import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.utils.TokenManager
@@ -123,7 +124,41 @@ class EventRepository(private val context: Context) {
         }
     }
 
-    suspend fun checkAttendance(qrDataModel: QrDataModel): Response<List<Event>> {
+    suspend fun checkAttendance(qrDataModel: QrDataModel): Response<List<Participant>> {
         return api.checkAttendance(qrDataModel)
+    }
+
+    suspend fun getEventApplications(eventId: String): Response<List<EventApplication>> {
+        return try {
+            api.getEventApplications(eventId)
+        } catch (e: Exception) {
+            Response.error(500, okhttp3.ResponseBody.create(null, "Exception: ${e.message}"))
+        }
+    }
+
+    suspend fun acceptApplication(applicationId: String): List<EventApplication>? {
+        return try {
+            val response = api.acceptApplication(applicationId)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun rejectApplication(applicationId: String): List<EventApplication>? {
+        return try {
+            val response = api.rejectApplication(applicationId)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 }

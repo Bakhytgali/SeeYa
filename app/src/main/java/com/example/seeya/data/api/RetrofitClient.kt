@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.221.110:8080"
+    private const val BASE_URL = "http://192.168.221.106:8080"
 
     // Функция для создания HTTP-клиента с токеном
     private fun createClient(context: Context): OkHttpClient {

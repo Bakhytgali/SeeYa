@@ -13,10 +13,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.seeya.data.model.CreateEventRequest
 import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
+import com.example.seeya.data.model.EventApplication
 import com.example.seeya.data.model.Participant
 import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.data.repository.EventRepository
@@ -315,6 +318,48 @@ class EventViewModel(application: Application, private val repository: EventRepo
             } catch (e: Exception) {
                 onError(e.message ?: "Unknown error")
             }
+        }
+    }
+
+    private val _applications = MutableStateFlow<List<EventApplication>>(emptyList())
+    val applications: StateFlow<List<EventApplication>> = _applications
+
+    private val _loadingApplications = MutableStateFlow(false)
+    val loadingApplications: StateFlow<Boolean> = _loadingApplications
+
+    fun loadEventApplications(eventId: String) {
+        viewModelScope.launch {
+            _loadingApplications.value = true
+            val response = repository.getEventApplications(eventId)
+            if (response.isSuccessful) {
+                _applications.value = response.body() ?: emptyList()
+            } else {
+                _applications.value = emptyList()
+                Log.e("EventViewModel", "Failed to load applications: ${response.errorBody()?.string()}")
+            }
+            _loadingApplications.value = false
+        }
+    }
+
+    fun acceptApplication(applicationId: String) {
+        viewModelScope.launch {
+            _loadingApplications.value = true
+            val result = repository.acceptApplication(applicationId)
+            result?.let {
+                _applications.value = it
+            }
+            _loadingApplications.value = false
+        }
+    }
+
+    fun rejectApplication(applicationId: String) {
+        viewModelScope.launch {
+            _loadingApplications.value = true
+            val result = repository.rejectApplication(applicationId)
+            result?.let {
+                _applications.value = it
+            }
+            _loadingApplications.value = false
         }
     }
 

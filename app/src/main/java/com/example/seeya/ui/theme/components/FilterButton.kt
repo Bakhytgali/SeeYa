@@ -10,11 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.seeya.ui.theme.Poppins
-import com.example.seeya.ui.theme.bgColor
-import com.example.seeya.ui.theme.grayText
-import com.example.seeya.ui.theme.primaryContainerColor
-import com.example.seeya.ui.theme.secondaryColor
 
 @Composable
 fun FilterButton(

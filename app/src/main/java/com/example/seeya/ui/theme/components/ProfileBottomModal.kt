@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
-import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.ModeEdit
+import androidx.compose.material.icons.outlined.Nightlight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,16 +32,16 @@ fun ProfileBottomModal(
     onClose: () -> Unit,
     onEditProfile: () -> Unit,
     onExitProfile: () -> Unit,
-    onDeleteAccount: () -> Unit,
+    onThemeSwitch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
-    val optionButtons = listOf(onEditProfile, onExitProfile, onDeleteAccount)
-    val optionTitles = listOf("Edit", "Exit", "Delete Account")
+    val optionButtons = listOf(onEditProfile, onExitProfile, onThemeSwitch)
+    val optionTitles = listOf("Edit", "Exit", "Switch Themes")
     val optionSubtitles =
-        listOf("Change the profile info", "Exit from account", "Delete my account")
+        listOf("Change the profile info", "Exit from account", "Switch Themes")
     val optionIcons = listOf<@Composable () -> Unit>(
         {
             Icon(
@@ -61,7 +61,7 @@ fun ProfileBottomModal(
         },
         {
             Icon(
-                imageVector = Icons.Outlined.DeleteOutline,
+                imageVector = Icons.Outlined.Nightlight,
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
@@ -71,7 +71,7 @@ fun ProfileBottomModal(
     val optionTitleColors = listOf(
         MaterialTheme.colorScheme.onBackground,
         MaterialTheme.colorScheme.onBackground,
-        Color.Red
+        MaterialTheme.colorScheme.onBackground,
     )
 
     ModalBottomSheet(

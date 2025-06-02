@@ -47,6 +47,7 @@ fun MainScaffold(
                             Text(
                                 text = title,
                                 style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     },

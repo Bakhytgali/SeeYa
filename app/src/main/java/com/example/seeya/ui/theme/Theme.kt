@@ -17,16 +17,16 @@ private val DarkColorScheme = darkColorScheme(
     primary = secondaryColor, // который Фиолетовый
     onBackground = primaryColor, // который Черно-Синий
     primaryContainer = bgColor,
-    secondaryContainer = grayText,
+    secondaryContainer = secondaryContainer,
     background = primaryContainerColor
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = secondaryColor, // который Фиолетовый
-    onBackground = primaryColor, // который Черно-Синий
-    primaryContainer = bgColor,
-    secondaryContainer = grayText,
-    background = primaryContainerColor
+    primary = darkSecondaryColor, // который Фиолетовый
+    onBackground = darkPrimaryColor, // который Черно-Синий
+    primaryContainer = darkBgColor,
+    secondaryContainer = darkSecondaryContainer,
+    background = darkPrimaryContainerColor
 )
 
 @Composable
@@ -50,7 +50,7 @@ fun SeeYaTheme(
 
     SideEffect {
         systemUIController.setSystemBarsColor(
-            color = Color.White
+            color = if(darkTheme) primaryContainerColor else darkPrimaryContainerColor
         )
     }
 

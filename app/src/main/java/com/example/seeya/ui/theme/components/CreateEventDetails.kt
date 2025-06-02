@@ -2,9 +2,11 @@ package com.example.seeya.ui.theme.components
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -13,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 @Composable
@@ -36,8 +39,8 @@ fun CreateEventDetails(
 
         Column {
             Text(
-                text = "0/80",
                 style = MaterialTheme.typography.bodySmall,
+                text = "${description.length}/40",
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -47,11 +50,16 @@ fun CreateEventDetails(
             CustomTextField(
                 text = description,
                 placeholder = "Event Description",
-                onValueChange = onDescriptionChange,
+                onValueChange = {
+                    if(description.length <= 80) {
+                        onDescriptionChange(it)
+                    }
+                },
                 numberOfLines = 4,
                 modifier = Modifier
                     .height(150.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                limit = 40
             )
         }
 
@@ -71,8 +79,26 @@ fun CreateEventDetails(
         )
 
         CustomTextField(
-            text = eventDateTime.toString(), // Просто выводим как есть
-            onValueChange = { /* не нужно, так как поле только для чтения */ },
+            text = location,
+            placeholder = "Location Link (2gis or GMaps)",
+            onValueChange = onLocationChange,
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Link,
+                    contentDescription = "Location Icon",
+                    tint = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        )
+
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+        val formattedDateTime = eventDateTime.format(formatter)
+
+        CustomTextField(
+            text = formattedDateTime,
+            onValueChange = { },
             placeholder = "Date",
             isActive = false,
             onClick = {
@@ -85,7 +111,7 @@ fun CreateEventDetails(
                             { _, hour, minute ->
                                 val newDateTime = LocalDateTime.of(
                                     year,
-                                    month + 1, // Месяцы в Calendar от 0 до 11
+                                    month + 1,
                                     dayOfMonth,
                                     hour,
                                     minute
@@ -105,5 +131,8 @@ fun CreateEventDetails(
             },
             modifier = Modifier.fillMaxWidth()
         )
+
+
+        Log.d("Date Picker", "$eventDateTime")
     }
 }

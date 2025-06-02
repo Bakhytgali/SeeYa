@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,7 @@ fun CustomBottomAppBar(
                     popUpTo("main") { inclusive = false }
                 }
                 else -> {
-                    popUpTo("main") { saveState = true }
+                    popUpTo("main") { saveState = false }
                 }
             }
         }
@@ -56,12 +57,12 @@ fun CustomBottomAppBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(bgColor),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         BottomAppBar(
             modifier = Modifier.fillMaxWidth(0.85f),
-            containerColor = bgColor
+            containerColor = MaterialTheme.colorScheme.background
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -72,7 +73,7 @@ fun CustomBottomAppBar(
                 BottomBarItem(
                     icon = {
                         Image(
-                            painter = if (bottomBarViewModel.activePage == "home") painterResource(R.drawable.home_icon)
+                            painter = if (bottomBarViewModel.activePage == "main") painterResource(R.drawable.home_icon)
                             else painterResource(R.drawable.home_icon_inactive),
                             contentDescription = "Home",
                             modifier = Modifier.size(30.dp)

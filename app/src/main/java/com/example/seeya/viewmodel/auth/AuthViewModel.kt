@@ -3,6 +3,7 @@ package com.example.seeya.viewmodel.auth
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.session.MediaSession.Token
 import android.net.Uri
 import android.util.Base64
 import android.util.Log
@@ -17,10 +18,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.seeya.data.model.SignInRequest
+import com.example.seeya.data.model.UpdateProfileRequest
 import com.example.seeya.data.model.User
 import com.example.seeya.data.repository.AuthRepository
-import com.example.seeya.ui.theme.grayText
+import com.example.seeya.ui.theme.secondaryContainer
 import com.example.seeya.utils.TokenManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 
@@ -58,7 +62,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         loadUserFromPrefs()
     }
 
-    fun login(onSuccess: () -> Unit) {
+    fun login(onSuccess: () -> Unit, onFailure: () -> Unit) {
         viewModelScope.launch {
             val response = repository.loginUser(loginText, loginPassword)
             if (response.isSuccessful) {
@@ -71,10 +75,13 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
                     _token.postValue(authResponse.token)
 
                     onSuccess()
-                }
+                } ?: onFailure()
+            } else {
+                onFailure()
             }
         }
     }
+
 
     private fun loadUserFromPrefs() {
         val context = getApplication<Application>().applicationContext
@@ -103,7 +110,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
     var registerIsPasswordConfirmedIndicator by mutableStateOf("Enter your password again to confirm it")
         private set
 
-    var registerIsPasswordConfirmedIndicatorColor by mutableStateOf(grayText)
+    var registerIsPasswordConfirmedIndicatorColor by mutableStateOf(secondaryContainer)
         private set
 
     var registerConfirmPassword by mutableStateOf("")
@@ -136,7 +143,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         registerIsPasswordConfirmedIndicator = when {
             registerPassword.isBlank() || registerConfirmPassword.isBlank() -> "Enter your password again to confirm it"
             registerPassword == registerConfirmPassword -> {
-                registerIsPasswordConfirmedIndicatorColor = grayText
+                registerIsPasswordConfirmedIndicatorColor = secondaryContainer
                 ""
             }
 
@@ -175,7 +182,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
     var registerPrefs = mutableStateListOf<String>()
 
     fun onRegisterPrefsChange(newValue: String) {
-        if(!registerPrefs.contains(newValue)) {
+        if (!registerPrefs.contains(newValue)) {
             registerPrefs.add(newValue)
         }
     }
@@ -204,7 +211,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
 
         inputStream?.close()
 
-        if(bytes != null) {
+        if (bytes != null) {
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
             imageBitmap = bitmap
             onRegisterPictureChange(encodeToBase64(bitmap))
@@ -227,18 +234,21 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         verifyCodeText = newValue
     }
 
+    var failedDialogOpen by mutableStateOf(false)
+
     fun register(onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
                 Log.d("AuthViewModel", "Starting registration process...")
-                Log.d("AuthViewModel", "Request data: " +
-                        "name=${registerName}, " +
-                        "surname=${registerSurname}, " +
-                        "username=${registerUsername}, " +
-                        "email=${registerEmail}, " +
-                        "password=***, " + // Не логируем пароль напрямую
-                        "interestedTags=${registerPrefs}, " +
-                        "profilePicture=${registerPicture?.take(10)}...") // Логируем только начало строки base64
+                Log.d(
+                    "AuthViewModel", "Request data: " +
+                            "name=${registerName}, " +
+                            "surname=${registerSurname}, " +
+                            "username=${registerUsername}, " +
+                            "email=${registerEmail}, " +
+                            "password=***, " + // Не логируем пароль напрямую
+                            "interestedTags=${registerPrefs}, "
+                ) // Логируем только начало строки base64
 
                 val response = repository.registerUser(
                     SignInRequest(
@@ -266,7 +276,6 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         }
     }
 
-
     fun verifyEmail(onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
@@ -286,7 +295,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         viewModelScope.launch {
             try {
                 val response = repository.verifyCode(code = verifyCodeText, email = registerEmail)
-                if(response) {
+                if (response) {
                     onResult(true, "Code Verification Successful")
                 } else {
                     onResult(false, "Failed to Verify the code")
@@ -304,12 +313,70 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         registerConfirmPassword = ""
         registerSurname = ""
         registerIsPasswordConfirmedIndicator = ""
-        registerIsPasswordConfirmedIndicatorColor = grayText
+        registerIsPasswordConfirmedIndicatorColor = secondaryContainer
         registerDialogIsOpen = false
         imageBitmap = null
         registerPicture = ""
         registrationStep = 1
         registerPrefs.clear()
     }
+
+    private val _restoreSuccess = MutableStateFlow<Boolean?>(null)
+    val restoreSuccess: StateFlow<Boolean?> = _restoreSuccess
+
+    private val _restoreLoading = MutableStateFlow(false)
+    val restoreLoading: StateFlow<Boolean> = _restoreLoading
+
+    private val _restoreErrorMessage = MutableStateFlow<String?>(null)
+    val restoreErrorMessage: StateFlow<String?> = _restoreErrorMessage
+
+
+    fun restorePassword(email: String) {
+        viewModelScope.launch {
+            _restoreLoading.value = true
+            _restoreErrorMessage.value = null
+            _restoreSuccess.value = null
+
+            try {
+                val response = repository.restorePassword(email)
+                if (response.isSuccessful) {
+                    _restoreSuccess.value = true
+                } else {
+                    _restoreErrorMessage.value = "Failed: ${response.code()}"
+                    _restoreSuccess.value = false
+                }
+            } catch (e: Exception) {
+                _restoreErrorMessage.value = e.localizedMessage ?: "Unknown error"
+                _restoreSuccess.value = false
+            } finally {
+                _restoreLoading.value = false
+            }
+        }
+    }
+
+    private val _errorMessage = MutableLiveData<String?>()
+    val errorMessage: LiveData<String?> = _errorMessage
+
+
+    fun updateAccountInfo(
+        request: UpdateProfileRequest,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            val token = _token
+            val result = token.value?.let { repository.updateAccountInfo(it, request) }
+            if (result != null) {
+                result.onSuccess { updatedUser ->
+                    _currentUser.postValue(updatedUser.copy())
+                    onSuccess()
+                }.onFailure { error ->
+                    _errorMessage.postValue(error.message)
+                    onError(error.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
 
 }

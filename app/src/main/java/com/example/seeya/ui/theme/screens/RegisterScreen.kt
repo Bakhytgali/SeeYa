@@ -109,12 +109,9 @@ fun RegisterScreen(
                 Log.d("auth", "${authViewModel.registrationStep}")
                 authViewModel.register { isSuccess, isError ->
                     if (isSuccess) {
-                        navController.navigate("login") {
-                            popUpTo(0) { inclusive = false }
-                            launchSingleTop = true
-                        }
+                        authViewModel.setDialogOpen(true)
                     } else {
-                        Log.d("Register User", isError)
+                        authViewModel.failedDialogOpen = true
                     }
                 }
             }
@@ -191,6 +188,22 @@ fun RegisterScreen(
                     )
                 }
 
+                if(authViewModel.failedDialogOpen) {
+                    Dialog(
+                        openAlertDialog = authViewModel.registerDialogIsOpen,
+                        onConfirm = {
+                            authViewModel.onRegistrationStepChange(1)
+                            authViewModel.failedDialogOpen = false
+                        },
+                        onDismiss = {
+                            authViewModel.onRegistrationStepChange(1)
+                            authViewModel.failedDialogOpen = false
+                        },
+                        dialogText = "Error Occurred!",
+                        dialogTitle = "Try Again!"
+                    )
+                }
+
                 Spacer(Modifier.height(30.dp))
 
                 SeeYaLogo()
@@ -199,7 +212,8 @@ fun RegisterScreen(
 
                 Text(
                     text = "Sign Up",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.height(30.dp))
@@ -295,6 +309,7 @@ fun RegisterScreen(
                     Text(
                         text = "Already have an account?",
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondaryContainer
                     )
 
                     TextButton(
@@ -302,6 +317,7 @@ fun RegisterScreen(
                             navController.navigate("login") {
                                 popUpTo("login") { inclusive = false }
                                 launchSingleTop = true
+                                restoreState = false
                             }
                             authViewModel.clearRegisterEntries()
                         }
