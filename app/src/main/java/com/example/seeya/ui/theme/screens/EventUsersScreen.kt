@@ -40,8 +40,6 @@ fun EventUsersPage(
     navController: NavController,
     searchViewModel: SearchViewModel,
 ) {
-    val users = eventViewModel.event?.participants
-
     MainScaffold(
         title = "",
         icon = {
@@ -57,7 +55,7 @@ fun EventUsersPage(
         authViewModel = authViewModel,
         content = { mod ->
             EventUsersContent(
-                users = users,
+                users = emptyList(),
                 modifier = mod
             )
         },

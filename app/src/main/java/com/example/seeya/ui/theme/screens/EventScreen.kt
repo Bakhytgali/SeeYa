@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.seeya.ui.theme.components.EventClubScreenButton
 import com.example.seeya.ui.theme.components.EventInfoBottomModal
 import com.example.seeya.ui.theme.components.MainScaffold
@@ -158,17 +159,14 @@ fun EventScreenContent(
                         horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         if (!event.eventPicture.isNullOrEmpty()) {
-                            eventViewModel.decodeBase64ToBitmap(event.eventPicture)
-                                ?.let { bitmap ->
-                                    Image(
-                                        bitmap = bitmap.asImageBitmap(),
-                                        contentDescription = "Event Image",
-                                        modifier = Modifier
-                                            .size(150.dp)
-                                            .clip(RoundedCornerShape(10.dp)),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
+                            AsyncImage(
+                                model = event.eventPicture,
+                                contentDescription = "Event Image",
+                                modifier = Modifier
+                                    .size(150.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentScale = ContentScale.Crop
+                            )
                         } else {
                             SeeYaLogo(
                                 color = MaterialTheme.colorScheme.secondaryContainer

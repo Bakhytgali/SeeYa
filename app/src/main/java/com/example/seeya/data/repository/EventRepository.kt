@@ -1,6 +1,8 @@
 package com.example.seeya.data.repository
 
 import android.content.Context
+import android.net.Uri
+import android.util.Log
 import com.example.seeya.data.api.APIService
 import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.CreateEventRequest
@@ -10,7 +12,16 @@ import com.example.seeya.data.model.EventApplication
 import com.example.seeya.data.model.Participant
 import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.utils.TokenManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import retrofit2.Response
+import java.io.IOException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -110,6 +121,44 @@ class EventRepository(private val context: Context) {
             null
         }
     }
+
+    suspend fun uploadImageToCloudinary(imageUri: Uri): String {
+        return withContext(Dispatchers.IO) {
+            val contentResolver = context.contentResolver
+            val inputStream = contentResolver.openInputStream(imageUri)
+                ?: throw IOException("Failed to open image input stream")
+
+            val fileBytes = inputStream.readBytes()
+            inputStream.close()
+
+            if (fileBytes.isEmpty()) throw IOException("Image is empty")
+
+            val requestBody = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file", "image.jpg", fileBytes.toRequestBody("image/jpeg".toMediaType()))
+                .addFormDataPart("upload_preset", "seeya_application")
+                .build()
+
+            val request = Request.Builder()
+                .url("https://api.cloudinary.com/v1_1/dghebgxse/image/upload")
+                .post(requestBody)
+                .build()
+
+            val client = OkHttpClient()
+            val response = client.newCall(request).execute()
+
+            if (!response.isSuccessful) {
+                val body = response.body?.string()
+                throw IOException("Upload failed: ${response.code} - ${body ?: "No body"}")
+            }
+
+            val json = JSONObject(response.body?.string() ?: "")
+            json.getString("secure_url")
+        }
+    }
+
+
+
 
     suspend fun getAttendance(eventId: String): List<Participant> {
         return try {

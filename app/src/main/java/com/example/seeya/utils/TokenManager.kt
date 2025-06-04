@@ -2,7 +2,6 @@ package com.example.seeya.utils
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import com.example.seeya.data.model.User
 import com.google.gson.Gson
 
@@ -10,6 +9,18 @@ object TokenManager {
     private const val PREFS_NAME = "auth_prefs"
     private const val TOKEN_KEY = "jwt_token"
     private const val USER_KEY = "user_data"
+
+    private const val FCM_TOKEN_KEY = "fcm_token"
+
+    // Сохраняем FCM-токен
+    fun saveFcmToken(context: Context, token: String) {
+        getPrefs(context).edit().putString(FCM_TOKEN_KEY, token).apply()
+    }
+
+    // Получаем FCM-токен
+    fun getFcmToken(context: Context): String? {
+        return getPrefs(context).getString(FCM_TOKEN_KEY, null)
+    }
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

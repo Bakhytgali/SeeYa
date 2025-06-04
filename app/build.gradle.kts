@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     kotlin("plugin.serialization") version "1.9.10"
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -53,6 +55,12 @@ android {
 }
 
 dependencies {
+    implementation (libs.firebase.messaging)
+
+    implementation(libs.okhttp)
+
+    implementation(platform(libs.firebase.bom))
+
     implementation (libs.kotlinx.serialization.json)
 
     implementation (libs.journeyapps.zxing.android.embedded)

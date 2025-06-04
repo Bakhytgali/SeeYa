@@ -172,8 +172,8 @@ fun CreateEventScreen(
                         Log.d("MyLog", "$currentStep")
                     } else if (currentStep == 4) {
                         Log.d("My Log", "Creating an Event...")
-                        eventViewModel.createEvent(
-                            onSuccess = {
+                        eventViewModel.uploadImageToCloudinary { result, message ->
+                            if (result) {
                                 navController.navigate("main") {
                                     popUpTo("main") {
                                         inclusive = false
@@ -182,17 +182,16 @@ fun CreateEventScreen(
                                     launchSingleTop = true
                                 }
                                 eventViewModel.clearEntries()
-                            },
-                            onError = {
+                            } else {
                                 Log.d("My Log", "Event Not Created")
                                 currentStep = 0
                             }
-                        )
+                        }
                     }
                 },
                 titleFilled = eventViewModel.eventTitle.isNotBlank(),
                 tagsChosen = eventViewModel.eventTags.isNotBlank(),
-                pictureChosen = eventViewModel.eventPicture.isNotBlank(),
+                pictureChosen = eventViewModel.eventPictureUri != null,
                 locationAndDescriptionFilled = eventViewModel.eventDescription.isNotBlank() && eventViewModel.eventLocation.isNotBlank()
             )
         }

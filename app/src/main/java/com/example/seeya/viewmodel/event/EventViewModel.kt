@@ -62,7 +62,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
     var eventPicture by mutableStateOf("")
         private set
 
-    var imageBitmap: Bitmap? by mutableStateOf(null)
+    var eventPictureUri: Uri? by mutableStateOf(null)
         private set
 
     var eventTypeValue by mutableStateOf("Open")
@@ -74,7 +74,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
         private set
 
     private val _isParticipating = MutableStateFlow(false)
-        val isParticipating: StateFlow<Boolean> = _isParticipating.asStateFlow()
+    val isParticipating: StateFlow<Boolean> = _isParticipating.asStateFlow()
 
     var eventInfoModalOpen by mutableStateOf(false)
         private set
@@ -89,7 +89,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
 
     fun checkIfParticipating(userId: String) {
         _isParticipating.value = event!!.participants.any {
-            it.id == userId
+            it == userId
         }
     }
 
@@ -155,41 +155,37 @@ class EventViewModel(application: Application, private val repository: EventRepo
     }
 
     fun handleImageUri(uri: Uri) {
-        val contentResolver = getApplication<Application>().contentResolver
-        val inputStream = contentResolver.openInputStream(uri)
-        val bytes = inputStream?.readBytes()
+        eventPictureUri = uri
+    }
 
-        inputStream?.close()
+    fun uploadImageToCloudinary(onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                Log.d("Cloudinary", "Start uploading image...")
+                val imageUrl = repository.uploadImageToCloudinary(eventPictureUri!!)
+                Log.d("Cloudinary", "Upload success, image URL: $imageUrl")
+                eventPicture = imageUrl
 
-        if(bytes != null) {
-            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            imageBitmap = bitmap
-            setNewEventPicture(encodeToBase64(bitmap))
+                createEvent(
+                    onSuccess = {
+                        onResult(true, "Success!")
+                    },
+                    onError = {
+                        onResult(false, "Error creating event: $it")
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("Cloudinary", "Upload failed: ${e.message}", e)
+                onResult(false, "Upload exception: ${e.message}")
+            }
         }
     }
 
-    fun decodeBase64ToBitmap(base64Str: String): Bitmap? {
-        return try {
-            val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
-            BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-    }
 
-    private fun encodeToBase64(bitmap: Bitmap): String {
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
-    }
-
-    fun createEvent(
+    private fun createEvent(
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-        val formatted = eventStartDate!!.format(formatter)
         if (user != null) {
             val userCreator = Creator(
                 id = user.id!!,
@@ -198,6 +194,8 @@ class EventViewModel(application: Application, private val repository: EventRepo
                 username = user.username,
                 rating = null
             )
+
+            Log.d("Event Creator", "${event?.startDate}")
 
             viewModelScope.launch {
                 val newEvent = CreateEventRequest(
@@ -208,7 +206,7 @@ class EventViewModel(application: Application, private val repository: EventRepo
                     isOpen = eventTypeIsOpen,
                     creator = userCreator,
                     location = eventLocation,
-                    startDate = formatted,
+                    startDate = eventStartDate.toString(),
                     eventTags = eventTags
                 )
 
@@ -335,7 +333,10 @@ class EventViewModel(application: Application, private val repository: EventRepo
                 _applications.value = response.body() ?: emptyList()
             } else {
                 _applications.value = emptyList()
-                Log.e("EventViewModel", "Failed to load applications: ${response.errorBody()?.string()}")
+                Log.e(
+                    "EventViewModel",
+                    "Failed to load applications: ${response.errorBody()?.string()}"
+                )
             }
             _loadingApplications.value = false
         }
@@ -371,6 +372,6 @@ class EventViewModel(application: Application, private val repository: EventRepo
         eventCategory = ""
         setEventType("Open")
         eventPicture = ""
-        imageBitmap = null
+        eventPictureUri = null
     }
 }

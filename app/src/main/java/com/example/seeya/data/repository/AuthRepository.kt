@@ -11,13 +11,20 @@ import com.example.seeya.data.model.User
 import com.example.seeya.data.model.VerifyCodeRequest
 import com.example.seeya.data.model.VerifyEmailRequest
 import com.example.seeya.utils.TokenManager
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.tasks.await
 import retrofit2.Response
 
 class AuthRepository(private val context: Context) {
     private val api = RetrofitClient.createApiService(context)
 
     suspend fun loginUser(email: String, password: String): Response<LoginResponse> {
-        val response = api.loginUser(LoginRequest(email, password))
+        // Получаем FCM токен
+        val fcmToken = FirebaseMessaging.getInstance().token.await()
+        TokenManager.saveFcmToken(context = context, token = fcmToken)
+
+        // Отправляем его сразу при логине
+        val response = api.loginUser(LoginRequest(email, password, fcmToken = fcmToken))
 
         if (response.isSuccessful) {
             response.body()?.let { authResponse ->
@@ -28,6 +35,7 @@ class AuthRepository(private val context: Context) {
 
         return response
     }
+
 
     suspend fun registerUser(signInRequest: SignInRequest): String? {
         return try {
@@ -83,6 +91,4 @@ class AuthRepository(private val context: Context) {
             Result.failure(e)
         }
     }
-
-
 }

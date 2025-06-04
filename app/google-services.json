@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "623292663664",
+    "project_id": "seeya-fd08a",
+    "storage_bucket": "seeya-fd08a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623292663664:android:3755a57932a35d7e35f1b5",
+        "android_client_info": {
+          "package_name": "com.example.seeya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3p6NZtd_mBrfYSMT8Gq5ZV7SzoeXbecE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

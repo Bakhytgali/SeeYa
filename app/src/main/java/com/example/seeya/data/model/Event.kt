@@ -10,12 +10,11 @@ data class Event(
     val eventPicture: String? = null,
     val isOpen: Boolean,
     val creator: Creator,
-    val participants: List<Participant> = emptyList(),
+    val participants: List<String> = emptyList(),
     val location: String,
     val startDate: String,
-    val endDate: String? = null,
     val createdAt: String,
-    val attendance: List<Participant> = emptyList(),
+    val attendance: List<String> = emptyList(),
     val eventTags: String,
 )
 

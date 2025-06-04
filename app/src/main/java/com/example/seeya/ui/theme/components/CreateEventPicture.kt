@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.seeya.viewmodel.event.EventViewModel
 
 @Composable
@@ -42,13 +43,12 @@ fun CreateEventPicture(
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable {
                     onClick()
-                }
-            ,
+                },
             contentAlignment = Alignment.Center
         ) {
-            if (eventViewModel.imageBitmap != null) {
-                Image(
-                    bitmap = eventViewModel.imageBitmap!!.asImageBitmap(),
+            if (eventViewModel.eventPictureUri != null) {
+                AsyncImage(
+                    model = eventViewModel.eventPictureUri,
                     contentDescription = "Selected Image",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -58,6 +58,7 @@ fun CreateEventPicture(
                     color = MaterialTheme.colorScheme.secondaryContainer
                 )
             }
+
         }
         Spacer(modifier = Modifier.height(15.dp))
         Text(
