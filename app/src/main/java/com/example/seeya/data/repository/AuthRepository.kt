@@ -1,6 +1,7 @@
 package com.example.seeya.data.repository
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.example.seeya.data.api.RetrofitClient
 import com.example.seeya.data.model.LoginResponse
@@ -12,8 +13,17 @@ import com.example.seeya.data.model.VerifyCodeRequest
 import com.example.seeya.data.model.VerifyEmailRequest
 import com.example.seeya.utils.TokenManager
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import retrofit2.Response
+import java.io.IOException
 
 class AuthRepository(private val context: Context) {
     private val api = RetrofitClient.createApiService(context)
@@ -36,7 +46,6 @@ class AuthRepository(private val context: Context) {
         return response
     }
 
-
     suspend fun registerUser(signInRequest: SignInRequest): String? {
         return try {
             Log.d("AuthRepository", "Making API call with request: ${signInRequest.copy(password = "***")}")
@@ -58,7 +67,6 @@ class AuthRepository(private val context: Context) {
             throw e
         }
     }
-
 
     suspend fun verifyEmail(email: String): Boolean {
         val request = VerifyEmailRequest(email)
@@ -89,6 +97,44 @@ class AuthRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun uploadImageToCloudinary(imageUri: Uri, context: Context): String {
+        return withContext(Dispatchers.IO) {
+            val contentResolver = context.contentResolver
+            val inputStream = contentResolver.openInputStream(imageUri)
+                ?: throw IOException("Не удалось открыть изображение")
+
+            val fileBytes = inputStream.readBytes()
+            inputStream.close()
+
+            if (fileBytes.isEmpty()) throw IOException("Изображение пустое")
+
+            val requestBody = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart(
+                    "file", "image.jpg",
+                    fileBytes.toRequestBody("image/jpeg".toMediaType())
+                )
+                .addFormDataPart("upload_preset", "seeya_application")
+                .build()
+
+            val request = Request.Builder()
+                .url("https://api.cloudinary.com/v1_1/dghebgxse/image/upload")
+                .post(requestBody)
+                .build()
+
+            val client = OkHttpClient()
+            val response = client.newCall(request).execute()
+
+            if (!response.isSuccessful) {
+                val body = response.body?.string()
+                throw IOException("Upload failed: ${response.code} - ${body ?: "No body"}")
+            }
+
+            val json = JSONObject(response.body?.string() ?: "")
+            json.getString("secure_url")
         }
     }
 }

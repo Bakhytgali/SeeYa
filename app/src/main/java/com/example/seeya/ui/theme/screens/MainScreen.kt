@@ -74,7 +74,11 @@ fun MainScreen(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(3.dp),
-                modifier = Modifier.padding(start = 25.dp)
+                modifier = Modifier
+                    .padding(start = 25.dp)
+                    .clickable {
+                        navController.navigate("eventOnMap")
+                    }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.LocationOn,
@@ -239,7 +243,7 @@ fun MainScreenContent(
                             verticalArrangement = Arrangement.spacedBy(15.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(filteredEvents.reversed()) { event ->
+                            items(filteredEvents) { event ->
                                 EventCard(
                                     event,
                                     modifier = Modifier

@@ -38,14 +38,22 @@ fun ProfileBottomModal(
     val sheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
 
-    val optionButtons = listOf(onEditProfile, onExitProfile, onThemeSwitch)
-    val optionTitles = listOf("Edit", "Exit", "Switch Themes")
+    val optionButtons = listOf(onEditProfile, onThemeSwitch, onExitProfile)
+    val optionTitles = listOf("Edit", "Switch Themes", "Exit")
     val optionSubtitles =
-        listOf("Change the profile info", "Exit from account", "Switch Themes")
+        listOf("Change the profile info", "Switch Themes", "Exit from account")
     val optionIcons = listOf<@Composable () -> Unit>(
         {
             Icon(
                 imageVector = Icons.Outlined.ModeEdit,
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(20.dp)
+            )
+        },
+        {
+            Icon(
+                imageVector = Icons.Outlined.Nightlight,
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
@@ -59,14 +67,6 @@ fun ProfileBottomModal(
                 modifier = Modifier.size(20.dp)
             )
         },
-        {
-            Icon(
-                imageVector = Icons.Outlined.Nightlight,
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(20.dp)
-            )
-        }
     )
     val optionTitleColors = listOf(
         MaterialTheme.colorScheme.onBackground,

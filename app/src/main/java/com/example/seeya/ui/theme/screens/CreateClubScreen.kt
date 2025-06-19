@@ -215,7 +215,7 @@ fun CreateClubScreen(
                                     launchSingleTop = true
                                 }
                             } else {
-                                Log.d("Event Creator: ", "Error!: $error")
+                                Log.d("com.example.seeya.data.model.Event Creator: ", "Error!: $error")
                             }
                         }
                     }

@@ -1,11 +1,8 @@
 package com.example.seeya.viewmodel.auth
 
 import android.app.Application
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.session.MediaSession.Token
+import android.content.Context
 import android.net.Uri
-import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -26,7 +23,6 @@ import com.example.seeya.utils.TokenManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
 
 class AuthViewModel(application: Application, private val repository: AuthRepository) :
     AndroidViewModel(application) {
@@ -189,7 +185,8 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
 
     fun checkIfPrefsAdded(newValue: String): Boolean = newValue in registerPrefs
 
-    var imageBitmap: Bitmap? by mutableStateOf(null)
+    var imageUri: Uri? by mutableStateOf(null)
+        private set
 
     private var registerPicture: String? by mutableStateOf("")
 
@@ -197,34 +194,8 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         registerPicture = newPicture
     }
 
-    private fun encodeToBase64(bitmap: Bitmap): String {
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
-        val byteArray = byteArrayOutputStream.toByteArray()
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
-    }
-
     fun handleImageUri(uri: Uri) {
-        val contentResolver = getApplication<Application>().contentResolver
-        val inputStream = contentResolver.openInputStream(uri)
-        val bytes = inputStream?.readBytes()
-
-        inputStream?.close()
-
-        if (bytes != null) {
-            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            imageBitmap = bitmap
-            onRegisterPictureChange(encodeToBase64(bitmap))
-        }
-    }
-
-    fun decodeBase64ToBitmap(base64Str: String): Bitmap? {
-        return try {
-            val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
-            BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-        } catch (e: IllegalArgumentException) {
-            null
-        }
+        imageUri = uri
     }
 
     var verifyCodeText by mutableStateOf("")
@@ -236,19 +207,16 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
 
     var failedDialogOpen by mutableStateOf(false)
 
-    fun register(onResult: (Boolean, String) -> Unit) {
+    fun register(context: Context, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
                 Log.d("AuthViewModel", "Starting registration process...")
-                Log.d(
-                    "AuthViewModel", "Request data: " +
-                            "name=${registerName}, " +
-                            "surname=${registerSurname}, " +
-                            "username=${registerUsername}, " +
-                            "email=${registerEmail}, " +
-                            "password=***, " + // Не логируем пароль напрямую
-                            "interestedTags=${registerPrefs}, "
-                ) // Логируем только начало строки base64
+
+                // Загружаем фото, если оно выбрано
+                if (imageUri != null) {
+                    val uploadedUrl = repository.uploadImageToCloudinary(imageUri = imageUri!!, context = context)
+                    registerPicture = uploadedUrl // сохраняем Cloudinary ссылку
+                }
 
                 val response = repository.registerUser(
                     SignInRequest(
@@ -269,12 +237,14 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
                     Log.e("AuthViewModel", "Registration failed: empty or null response")
                     onResult(false, "Registration failed. Please try again.")
                 }
+
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Registration error: ${e.message}", e)
-                onResult(false, "Network error: ${e.localizedMessage ?: "Unknown error"}")
+                onResult(false, "Error: ${e.localizedMessage ?: "Unknown error"}")
             }
         }
     }
+
 
     fun verifyEmail(onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
@@ -315,7 +285,7 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         registerIsPasswordConfirmedIndicator = ""
         registerIsPasswordConfirmedIndicatorColor = secondaryContainer
         registerDialogIsOpen = false
-        imageBitmap = null
+        imageUri = null
         registerPicture = ""
         registrationStep = 1
         registerPrefs.clear()
@@ -378,5 +348,29 @@ class AuthViewModel(application: Application, private val repository: AuthReposi
         }
     }
 
-
+    fun updatePhoto(
+        uri: Uri,
+        context: Context,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            try {
+                val imageUrl = repository.uploadImageToCloudinary(uri, context)
+                updateAccountInfo(
+                    request = UpdateProfileRequest(
+                        username = null,
+                        name = null,
+                        surname = null,
+                        password = null,
+                        profilePicture = imageUrl
+                    ),
+                    onSuccess = onSuccess,
+                    onError = onError
+                )
+            } catch (e: Exception) {
+                onError("Ошибка загрузки изображения: ${e.message}")
+            }
+        }
+    }
 }

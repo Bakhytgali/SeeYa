@@ -1,5 +1,7 @@
 package com.example.seeya.data.model
 
+import android.net.Uri
+
 data class UpdateProfileRequest(
     val username: String?,
     val profilePicture: String?,

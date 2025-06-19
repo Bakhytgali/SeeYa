@@ -35,6 +35,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,6 +98,10 @@ fun ClubsScreenContent(
     clubsViewModel: ClubsViewModel,
     modifier: Modifier = Modifier
 ) {
+
+    var searchClubsValue by remember {
+        mutableStateOf("")
+    }
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -104,16 +112,17 @@ fun ClubsScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .fillMaxHeight(),
+                .fillMaxHeight()
+            ,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
             Spacer(Modifier.height(20.dp))
 
             CustomTextField(
-                text = "",
+                text = searchClubsValue,
                 onValueChange = {
-
+                    searchClubsValue = it
                 },
                 placeholder = "Search Clubs",
                 leadingIcon = {
@@ -128,43 +137,113 @@ fun ClubsScreenContent(
 
             Spacer(Modifier.height(20.dp))
 
-            when (clubsViewModel.myClubs) {
-                is ClubsState.Idle -> {}
-                is ClubsState.Loading -> {
-                    CircularProgressIndicator()
+            if(searchClubsValue.isBlank()) {
+                when (clubsViewModel.myClubs) {
+                    is ClubsState.Idle -> {}
+                    is ClubsState.Loading -> {
+                        CircularProgressIndicator()
+                    }
+
+                    is ClubsState.Empty -> {
+                        Text(
+                            "Super Empty Here!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    }
+
+                    is ClubsState.Success -> {
+                        FollowingClubsBlock(
+                            clubs = (clubsViewModel.myClubs as ClubsState.Success).clubs,
+                            modifier = Modifier.fillMaxWidth(),
+                            navController = navController
+                        )
+                    }
+
+                    is ClubsState.Error -> {
+                        val error = (clubsViewModel.myClubs as ClubsState.Error)
+                        Text(
+                            text = error.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Red
+                        )
+                    }
+
+                    else -> {}
                 }
 
-                is ClubsState.Empty -> {
-                    Text(
-                        "Super Empty Here!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                }
+                Spacer(Modifier.height(20.dp))
 
-                is ClubsState.Success -> {
-                    FollowingClubsBlock(
-                        clubs = (clubsViewModel.myClubs as ClubsState.Success).clubs,
-                        modifier = Modifier.fillMaxWidth(),
-                        navController = navController
-                    )
-                }
-
-                is ClubsState.Error -> {
-                    val error = (clubsViewModel.myClubs as ClubsState.Error)
-                    Text(
-                        text = error.message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Red
-                    )
-                }
-
-                else -> {}
+                RecommendedGroupsBlock(modifier = Modifier.fillMaxWidth(), navController = navController)
+            } else {
+                SearchClubsList(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                )
             }
 
-            Spacer(Modifier.height(20.dp))
+        }
+    }
+}
 
-            RecommendedGroupsBlock(modifier = Modifier.fillMaxWidth(), navController = navController)
+@Composable
+fun SearchClubsList(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Nothing Here!"
+        )
+    }
+}
+
+@Composable
+fun ClubCard(
+    club: Club,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        modifier = modifier
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.padding(start = 20.dp, top = 15.dp, bottom = 15.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(0.95f),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = club.clubTags,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                )
+
+                Text(
+                    text = "${club.participants.size} Joined",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            Text(
+                text = club.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
         }
     }
 }
@@ -264,19 +343,19 @@ fun BriefClubCard(
             horizontalArrangement = Arrangement.spacedBy(15.dp),
             modifier = Modifier.padding(10.dp)
         ) {
-            club.clubPicture?.let { base64 ->
-                val bitmap = decodeBase64ToBitmap(base64)
-                bitmap?.let {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Club Logo",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(70.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
-                }
-            }
+//            club.clubPicture?.let { base64 ->
+//                val bitmap = decodeBase64ToBitmap(base64)
+//                bitmap?.let {
+//                    Image(
+//                        bitmap = it.asImageBitmap(),
+//                        contentDescription = "Club Logo",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier
+//                            .size(70.dp)
+//                            .clip(RoundedCornerShape(8.dp))
+//                    )
+//                }
+//            }
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {

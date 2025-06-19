@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.seeya.data.model.Event
 import com.example.seeya.data.model.SearchUser
 import com.example.seeya.data.model.User
 import com.example.seeya.data.repository.SearchRepository
@@ -19,33 +20,60 @@ class SearchViewModel(
     private val repository: SearchRepository
 ) : AndroidViewModel(application) {
 
-    private val _searchState = MutableStateFlow<SearchState>(SearchState.Idle)
-    val searchState: StateFlow<SearchState> = _searchState.asStateFlow()
-
     var searchText by mutableStateOf("")
         private set
 
-    fun onSearchTextChange(newValue: String) {
-        searchText = newValue
-        searchUser(searchText)
-    }
+    private val _searchUserState = MutableStateFlow<SearchState>(SearchState.Idle)
+    val searchUserState: StateFlow<SearchState> = _searchUserState.asStateFlow()
+
+    private val _searchEventsResults = MutableStateFlow<List<Event>>(emptyList())
+    val searchEventsResults: StateFlow<List<Event>> = _searchEventsResults.asStateFlow()
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     private val _getUserState = MutableStateFlow<GetUserState>(GetUserState.Idle)
     val getUserState: StateFlow<GetUserState> = _getUserState.asStateFlow()
 
+    fun onSearchTextChange(newValue: String) {
+        searchText = newValue
+        searchUser(newValue)
+        searchEvents(newValue)
+    }
+
+    private fun searchEvents(query: String) {
+        viewModelScope.launch {
+            _loading.value = true
+            _error.value = null
+
+            try {
+                val result = repository.searchEvents(query)
+                _searchEventsResults.value = result
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Unknown error"
+                _searchEventsResults.value = emptyList()
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
     private fun searchUser(query: String) {
         viewModelScope.launch {
-            _searchState.value = SearchState.Loading
+            _searchUserState.value = SearchState.Loading
             when (val result = repository.searchUser(query)) {
-                is SearchRepository.SearchResult.Success -> {
-                    _searchState.value = if (result.users.isNotEmpty()) {
+                is SearchRepository.SearchUserResult.Success -> {
+                    _searchUserState.value = if (result.users.isNotEmpty()) {
                         SearchState.Success(result.users)
                     } else {
                         SearchState.Empty
                     }
                 }
-                is SearchRepository.SearchResult.Error -> {
-                    _searchState.value = SearchState.Error(
+                is SearchRepository.SearchUserResult.Error -> {
+                    _searchUserState.value = SearchState.Error(
                         message = result.message,
                         code = result.code
                     )
@@ -57,11 +85,10 @@ class SearchViewModel(
     fun getUserById(userId: String) {
         viewModelScope.launch {
             _getUserState.value = GetUserState.Loading
-
-            when(val result = repository.getUserById(userId)) {
+            when (val result = repository.getUserById(userId)) {
                 is SearchRepository.GetUserResult.Success -> {
-                    _getUserState.value = if(result.user != null) {
-                        GetUserState.Success(user = result.user)
+                    _getUserState.value = if (result.user != null) {
+                        GetUserState.Success(result.user)
                     } else {
                         GetUserState.Empty
                     }
@@ -79,6 +106,10 @@ class SearchViewModel(
     fun clearGetUserState() {
         _getUserState.value = GetUserState.Idle
     }
+
+    fun clearError() {
+        _error.value = null
+    }
 }
 
 sealed class SearchState {
@@ -90,9 +121,11 @@ sealed class SearchState {
 }
 
 sealed class GetUserState {
-    data object Idle: GetUserState()
-    data object Loading: GetUserState()
-    data object Empty: GetUserState()
-    data class Success(val user: User?): GetUserState()
-    data class Error(val message: String, val code: Int? = null): GetUserState()
+    data object Idle : GetUserState()
+    data object Loading : GetUserState()
+    data object Empty : GetUserState()
+    data class Success(val user: User?) : GetUserState()
+    data class Error(val message: String, val code: Int? = null) : GetUserState()
 }
+
+

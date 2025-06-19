@@ -114,7 +114,7 @@ class ClubsViewModel(application: Application, private val repository: ClubsRepo
 
     fun checkIfParticipating(userId: String) {
         viewModelScope.launch {
-            isParticipating = club?.participants?.any { it.id == userId } ?: false
+            isParticipating = club?.participants?.any { it == userId } ?: false
         }
     }
 

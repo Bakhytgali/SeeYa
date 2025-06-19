@@ -14,29 +14,24 @@ import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
-    // Вызывается, когда приходит новое уведомление
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
         Log.d("FCM", "Message received: ${remoteMessage.data}")
 
-        // Если приходит data payload (то, что ты сам отправляешь с бэка)
         remoteMessage.data.let { data ->
+            Log.d("NOTIFICATIONS", data.toString())
             val title = data["title"] ?: "Уведомление"
             val message = data["message"] ?: ""
             showNotification(title, message)
         }
     }
 
-    // Если обновился токен — тут ты можешь отправить его на сервер снова (опционально)
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("FCM", "New token: $token")
 
-        // Сохраняем токен локально
         TokenManager.saveFcmToken(applicationContext, token)
-
-        // TODO: при желании можешь отправить его на сервер, если юзер уже авторизован
     }
 
     private fun showNotification(title: String, message: String) {

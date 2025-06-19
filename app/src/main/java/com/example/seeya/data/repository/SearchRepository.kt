@@ -2,17 +2,17 @@ package com.example.seeya.data.repository
 
 import android.content.Context
 import com.example.seeya.data.api.RetrofitClient
+import com.example.seeya.data.model.Event
 import com.example.seeya.data.model.SearchUser
 import com.example.seeya.data.model.User
-import com.example.seeya.utils.TokenManager
 import retrofit2.Response
 
 class SearchRepository(private val context: Context) {
     private val api = RetrofitClient.createApiService(context)
 
-    sealed class SearchResult {
-        data class Success(val users: List<SearchUser>) : SearchResult()
-        data class Error(val message: String, val code: Int? = null) : SearchResult()
+    sealed class SearchUserResult {
+        data class Success(val users: List<SearchUser>) : SearchUserResult()
+        data class Error(val message: String, val code: Int? = null) : SearchUserResult()
     }
 
     sealed class GetUserResult {
@@ -20,22 +20,35 @@ class SearchRepository(private val context: Context) {
         data class Error(val message: String, val code: Int? = null): GetUserResult()
     }
 
-    suspend fun searchUser(value: String): SearchResult {
+    suspend fun searchUser(value: String): SearchUserResult {
         return try {
             val response = api.searchUser(value)
             if (response.isSuccessful) {
-                SearchResult.Success(response.body()?.items ?: emptyList())
+                SearchUserResult.Success(response.body()?.items ?: emptyList())
             } else {
-                SearchResult.Error(
+                SearchUserResult.Error(
                     message = response.message(),
                     code = response.code()
                 )
             }
         } catch (e: Exception) {
-            SearchResult.Error(
+            SearchUserResult.Error(
                 message = e.message ?: "Network error",
                 code = null
             )
+        }
+    }
+
+    suspend fun searchEvents(value: String): List<Event> {
+        return try {
+            val response = api.searchEvents(value)
+            if (response.isSuccessful) {
+                response.body()?.items ?: emptyList()
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 

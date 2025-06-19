@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.seeya.viewmodel.auth.AuthViewModel
 
 @Composable
@@ -53,22 +54,19 @@ fun RegistrationImageCheck(
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable {
                     launcher.launch("image/*")
-                }
-            ,
+                },
             contentAlignment = Alignment.Center
         ) {
-            if (authViewModel.imageBitmap != null) {
-                Image(
-                    bitmap = authViewModel.imageBitmap!!.asImageBitmap(),
+            authViewModel.imageUri?.let {
+                AsyncImage(
+                    model = it,
                     contentDescription = "Selected Image",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            } else {
-                SeeYaLogo(
-                    color = MaterialTheme.colorScheme.secondaryContainer
-                )
-            }
+            } ?: SeeYaLogo(
+                color = MaterialTheme.colorScheme.secondaryContainer
+            )
         }
         Spacer(modifier = Modifier.height(15.dp))
         Text(

@@ -33,7 +33,7 @@ fun CreateEventScreen(
     navController: NavController,
     eventViewModel: EventViewModel
 ) {
-    var currentStep by remember {
+    var currentStep by rememberSaveable {
         mutableIntStateOf(0)
     }
 
@@ -121,6 +121,11 @@ fun CreateEventScreen(
                     eventDateTime = eventViewModel.eventStartDate!!,
                     onDateTimeChange = {
                         eventViewModel.setNewEventStartDate(it)
+                    },
+                    onClick = {
+                        navController.navigate("map_picker") {
+                            restoreState = true
+                        }
                     }
                 )
             }
@@ -171,7 +176,7 @@ fun CreateEventScreen(
                         currentStep++
                         Log.d("MyLog", "$currentStep")
                     } else if (currentStep == 4) {
-                        Log.d("My Log", "Creating an Event...")
+                        Log.d("My Log", "Creating an com.example.seeya.data.model.Event...")
                         eventViewModel.uploadImageToCloudinary { result, message ->
                             if (result) {
                                 navController.navigate("main") {
@@ -183,7 +188,7 @@ fun CreateEventScreen(
                                 }
                                 eventViewModel.clearEntries()
                             } else {
-                                Log.d("My Log", "Event Not Created")
+                                Log.d("My Log", "com.example.seeya.data.model.Event Not Created")
                                 currentStep = 0
                             }
                         }

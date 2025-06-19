@@ -38,10 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.seeya.data.model.User
 import com.example.seeya.ui.theme.components.MainScaffold
 import com.example.seeya.ui.theme.components.ProfileBottomModal
@@ -150,7 +152,13 @@ fun ProfileScreen(
                         modifier = mod,
                         isCurrentUserProfile = isCurrentUserProfile,
                         navController = navController,
-                        themeViewModel = themeViewModel
+                        themeViewModel = themeViewModel,
+                        toVisitedEvents = {
+                            if (isCurrentUserProfile) {
+                                navController.navigate("visitedEvents")
+                                bottomBarViewModel.onActivePageChange("visitedEvents")
+                            }
+                        }
                     )
                 }
             }
@@ -166,11 +174,10 @@ fun ProfileScreenContent(
     modifier: Modifier = Modifier,
     isCurrentUserProfile: Boolean = false,
     themeViewModel: ThemeViewModel,
+    toVisitedEvents: () -> Unit,
 ) {
-    val userPicture = if (user?.profilePicture != null)
-        authViewModel.decodeBase64ToBitmap(user.profilePicture)
-    else
-        null
+    Log.d("PROFILE SCREEN", user?.profilePicture ?: "no profile picture")
+    Log.d("PROFILE SCREEN", "User Model: $user")
 
     var profileOptionsModalOpen by remember {
         mutableStateOf(false)
@@ -190,22 +197,22 @@ fun ProfileScreenContent(
                 color = MaterialTheme.colorScheme.secondaryContainer
             )
         } else {
-            if(profileOptionsModalOpen) {
+            if (profileOptionsModalOpen) {
                 ProfileBottomModal(
                     onClose = {
                         profileOptionsModalOpen = false
                     },
-                    onEditProfile =  {
+                    onEditProfile = {
                         navController.navigate("editProfile") {
                             launchSingleTop = true
                         }
                     },
-                    onThemeSwitch =  {
+                    onThemeSwitch = {
                         themeViewModel.onDarkModeChange()
                     },
-                    onExitProfile =  {
+                    onExitProfile = {
                         navController.navigate("login") {
-                            popUpTo("login") { inclusive = true }
+                            popUpTo(0) { inclusive = true }
                             launchSingleTop = true
                         }
                         authViewModel.logout()
@@ -228,7 +235,7 @@ fun ProfileScreenContent(
                     contentAlignment = Alignment.Center
                 ) {
 
-                    if(isCurrentUserProfile) {
+                    if (isCurrentUserProfile) {
                         IconButton(
                             onClick = {
                                 profileOptionsModalOpen = true
@@ -252,18 +259,19 @@ fun ProfileScreenContent(
                         verticalArrangement = Arrangement.spacedBy(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (userPicture == null) {
+                        if (user.profilePicture.isNullOrEmpty()) {
                             SeeYaLogo(
                                 fontSize = 90,
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             )
                         } else {
-                            Image(
-                                bitmap = userPicture.asImageBitmap(),
+                            AsyncImage(
+                                model = user.profilePicture,
                                 contentDescription = "User Profile Photo",
                                 modifier = Modifier
                                     .size(200.dp)
-                                    .clip(RoundedCornerShape(20.dp))
+                                    .clip(RoundedCornerShape(20.dp)),
+                                contentScale = ContentScale.Crop
                             )
                         }
 
@@ -297,7 +305,8 @@ fun ProfileScreenContent(
                     ProfileInfoWidget(
                         widgetInfo = user.visitedEvents.size.toString(),
                         widgetTitle = "Events Visited",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        onClick = toVisitedEvents
                     )
 
                     ProfileInfoWidget(
@@ -336,14 +345,16 @@ fun ProfileInfoWidget(
     widgetTitle: String,
     widgetInfo: String,
     modifier: Modifier = Modifier,
-    widgetInfoColor: Color = MaterialTheme.colorScheme.onBackground
+    widgetInfoColor: Color = MaterialTheme.colorScheme.onBackground,
+    onClick: () -> Unit = { }
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
         modifier = modifier,
-        shape = RoundedCornerShape(15.dp)
+        shape = RoundedCornerShape(15.dp),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier

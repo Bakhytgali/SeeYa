@@ -11,9 +11,9 @@ data class User(
     val username: String,
     val isAdmin: Boolean,
     val interestedTags: List<String>,
-    var profilePicture: String,
+    var profilePicture: String?,
     var visitedEvents: List<String>,
     var joinedClubs: List<String> = emptyList(),
     val createdAt: Date,
-    val rating: Double = 0.0,
+    val rating: Double,
 )

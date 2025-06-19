@@ -37,6 +37,10 @@ import androidx.compose.ui.unit.dp
 import com.example.seeya.data.model.Event
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,7 +99,7 @@ fun EventInfoBottomModal(
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.Lock,
-                            contentDescription = "Info Modal Event Type",
+                            contentDescription = "Info Modal com.example.seeya.data.model.Event Type",
                             tint = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.size(20.dp)
                         )
@@ -107,7 +111,7 @@ fun EventInfoBottomModal(
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.LocationOn,
-                            contentDescription = "Info Modal Event Location",
+                            contentDescription = "Info Modal com.example.seeya.data.model.Event Location",
                             tint = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.size(20.dp)
                         )
@@ -116,19 +120,14 @@ fun EventInfoBottomModal(
                     rowText = event.location
                 )
 
-                val dateSubString = event.startDate.substringBefore(" (")
-
-                val inputFormat = SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z", Locale.US)
-                val date = inputFormat.parse(dateSubString)
-
-                val outputFormat = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault())
-                val formattedDate = outputFormat.format(date)
+                val formattedDate = LocalDateTime.parse(event.startDate)
+                    .format(DateTimeFormatter.ofPattern("dd.MM HH:mm"))
 
                 EventInfoModalRow(
                     icon = {
                         Icon(
                             imageVector = Icons.Outlined.CalendarMonth,
-                            contentDescription = "Info Modal Event Location",
+                            contentDescription = "Event Date",
                             tint = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.size(20.dp)
                         )
@@ -154,7 +153,7 @@ fun EventInfoBottomModal(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close Event Info Bottom Modal",
+                    contentDescription = "Close com.example.seeya.data.model.Event Info Bottom Modal",
                     tint = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.size(25.dp)
                 )

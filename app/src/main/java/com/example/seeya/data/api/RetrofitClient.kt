@@ -8,9 +8,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.221.124:8080"
+    private const val BASE_URL = "http://192.168.221.84:8080"
 
-    // Функция для создания HTTP-клиента с токеном
     private fun createClient(context: Context): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -21,23 +20,22 @@ object RetrofitClient {
             val request = chain.request().newBuilder()
 
             if (!token.isNullOrEmpty()) {
-                request.addHeader("Authorization", "Bearer $token") // Добавляем JWT в заголовок
+                request.addHeader("Authorization", "Bearer $token")
             }
 
             chain.proceed(request.build())
         }
 
         return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor) // Логирование запросов
-            .addInterceptor(authInterceptor) // Добавление токена
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
             .build()
     }
 
-    // Функция для создания Retrofit API
     fun createApiService(context: Context): APIService.ApiService {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(createClient(context)) // Используем HTTP-клиент с токеном
+            .client(createClient(context))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(APIService.ApiService::class.java)

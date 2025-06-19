@@ -30,12 +30,13 @@ fun EventTypeBottomModalCard(
         Column {
             Text(
                 text = eventType.title,
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = stringResource(eventType.description),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondaryContainer
+                color = MaterialTheme.colorScheme.secondaryContainer,
             )
         }
     }

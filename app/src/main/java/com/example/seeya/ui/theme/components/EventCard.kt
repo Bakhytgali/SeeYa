@@ -59,7 +59,7 @@ fun EventCard(
                 )
 
                 Text(
-                    text = event.eventTags,
+                    text = event.eventTags ?: "Null",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondaryContainer
                 )
@@ -77,11 +77,18 @@ fun EventCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
+                text = event.eventRating.toString(),
+                fontSize = 13.sp,
+                color = secondaryContainer
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
                 text = event.location,
                 fontSize = 13.sp,
                 color = secondaryContainer
             )
         }
     }
-
 }

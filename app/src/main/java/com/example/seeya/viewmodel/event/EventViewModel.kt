@@ -21,9 +21,15 @@ import com.example.seeya.data.model.Creator
 import com.example.seeya.data.model.Event
 import com.example.seeya.data.model.EventApplication
 import com.example.seeya.data.model.Participant
+import com.example.seeya.data.model.PostModel
+import com.example.seeya.data.model.PostRequestModel
 import com.example.seeya.data.model.QrDataModel
+import com.example.seeya.data.model.UpdateEventRequest
 import com.example.seeya.data.repository.EventRepository
 import com.example.seeya.utils.TokenManager
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -63,7 +69,6 @@ class EventViewModel(application: Application, private val repository: EventRepo
         private set
 
     var eventPictureUri: Uri? by mutableStateOf(null)
-        private set
 
     var eventTypeValue by mutableStateOf("Open")
         private set
@@ -72,6 +77,13 @@ class EventViewModel(application: Application, private val repository: EventRepo
 
     var eventStartDate: LocalDateTime? by mutableStateOf(LocalDateTime.now())
         private set
+
+    var eventCoordinates: String by mutableStateOf("")
+        private set
+
+    fun onEventCoordinatesChange(newValue: String) {
+        eventCoordinates = newValue
+    }
 
     private val _isParticipating = MutableStateFlow(false)
     val isParticipating: StateFlow<Boolean> = _isParticipating.asStateFlow()
@@ -169,18 +181,20 @@ class EventViewModel(application: Application, private val repository: EventRepo
                 createEvent(
                     onSuccess = {
                         onResult(true, "Success!")
+                        clearEntries()
                     },
                     onError = {
                         onResult(false, "Error creating event: $it")
+                        clearEntries()
                     }
                 )
             } catch (e: Exception) {
                 Log.e("Cloudinary", "Upload failed: ${e.message}", e)
                 onResult(false, "Upload exception: ${e.message}")
+                clearEntries()
             }
         }
     }
-
 
     private fun createEvent(
         onSuccess: () -> Unit,
@@ -206,16 +220,21 @@ class EventViewModel(application: Application, private val repository: EventRepo
                     isOpen = eventTypeIsOpen,
                     creator = userCreator,
                     location = eventLocation,
+                    locationCoordinates = eventCoordinates,
                     startDate = eventStartDate.toString(),
-                    eventTags = eventTags
+                    eventTags = eventTags,
                 )
+
+                Log.d("Event View Model", eventCoordinates)
 
                 val response = repository.createEvent(newEvent)
 
                 if (response?.isSuccessful == true) {
                     onSuccess()
+                    clearEntries()
                 } else {
                     onError("Failed to create event: ${response?.message() ?: "Unknown error"}")
+                    clearEntries()
                 }
             }
         }
@@ -364,10 +383,275 @@ class EventViewModel(application: Application, private val repository: EventRepo
         }
     }
 
+    private val _visitedEvents = MutableStateFlow<List<Event>>(emptyList())
+    val visitedEvents: StateFlow<List<Event>> = _visitedEvents
+
+    private val _loadingVisitedEvents = MutableStateFlow(false)
+    val loadingVisitedEvents: StateFlow<Boolean> = _loadingVisitedEvents
+
+    fun getVisitedEvents() {
+        viewModelScope.launch {
+            _loadingVisitedEvents.value = true
+            try {
+                val result = repository.getVisitedEvents()
+                _visitedEvents.value = result.body() ?: emptyList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _visitedEvents.value = emptyList()
+            } finally {
+                _loadingVisitedEvents.value = false
+            }
+        }
+    }
+
+    fun rateEvent(eventId: String, rating: Int, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.rateEvent(eventId, rating)
+                onResult(response.isSuccessful)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onResult(false)
+            }
+        }
+    }
+
+    var addPostStatus by mutableStateOf<Int?>(null)
+        private set
+
+    private suspend fun uploadMediaToCloudinary(uri: Uri): String {
+        return repository.uploadImageToCloudinary(uri)
+    }
+
+    fun addPostMediaToCloudinary(
+        media: List<Uri>,
+        header: String,
+        content: String,
+        eventId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val urls = media.map { uri ->
+                    uploadMediaToCloudinary(uri)
+                }
+
+                addPost(
+                    header = header,
+                    content = content,
+                    media = urls,
+                    eventId = eventId,
+                    onSuccess = onSuccess,
+                    onError = { onError("Ошибка при создании поста") }
+                )
+            } catch (e: Exception) {
+                onError("Ошибка загрузки медиа: ${e.message}")
+            }
+        }
+    }
+
+    private fun addPost(
+        header: String,
+        content: String,
+        media: List<String>,
+        eventId: String,
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+        val date = LocalDateTime.now().format(formatter)
+        viewModelScope.launch {
+            val post = PostRequestModel(header, content, media, date)
+            val resultCode = repository.addPost(eventId, post)
+
+            if (resultCode == 200) {
+                onSuccess()
+            } else {
+                onError()
+            }
+        }
+    }
+
+    fun resetAddPostStatus() {
+        addPostStatus = null
+    }
+
+    var post by mutableStateOf<PostModel?>(null)
+        private set
+
+    var getPostLoading by mutableStateOf(false)
+        private set
+
+    var getPostErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun fetchPost(postId: String, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            getPostLoading = true
+            getPostErrorMessage = null
+
+            try {
+                val response = repository.getPost(postId)
+                if (response.isSuccessful) {
+                    post = response.body()
+                    onResult(true, null)
+                } else {
+                    getPostErrorMessage = "Ошибка ${response.code()}: ${response.message()}"
+                    onResult(false, response.message())
+                }
+            } catch (e: Exception) {
+                getPostErrorMessage = "Ошибка получения поста: ${e.message}"
+                e.printStackTrace()
+                onResult(false, e.message)
+            } finally {
+                getPostLoading = false
+                onResult(false, "Unknown Error")
+            }
+        }
+    }
+
+    var posts by mutableStateOf<List<PostModel>>(emptyList())
+        private set
+
+    var fetchPostsLoading by mutableStateOf(false)
+        private set
+
+    var fetchPostsErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun fetchPosts(eventId: String, onResult: (Boolean, String?) -> Unit) {
+        viewModelScope.launch {
+            fetchPostsLoading = true
+            fetchPostsErrorMessage = null
+
+            try {
+                val response = repository.fetchPosts(eventId)
+                if (response.isSuccessful) {
+                    posts = response.body().orEmpty()
+                    onResult(true, null)
+                } else {
+                    fetchPostsErrorMessage = "Ошибка ${response.code()}: ${response.message()}"
+                    onResult(false, response.message())
+                }
+            } catch (e: Exception) {
+                fetchPostsErrorMessage = "Ошибка получения постов: ${e.message}"
+                e.printStackTrace()
+                onResult(false, e.message)
+            } finally {
+                fetchPostsLoading = false
+            }
+        }
+    }
+
+    var likeErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    suspend fun likePost(postId: String): List<String>? {
+        return try {
+            val response = repository.likePost(postId)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                likeErrorMessage = "Ошибка ${response.code()}: ${response.message()}"
+                null
+            }
+        } catch (e: Exception) {
+            likeErrorMessage = "Ошибка лайка: ${e.message}"
+            null
+        }
+    }
+
+    suspend fun unlikePost(postId: String): List<String>? {
+        return try {
+            val response = repository.unlikePost(postId)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                likeErrorMessage = "Ошибка ${response.code()}: ${response.message()}"
+                null
+            }
+        } catch (e: Exception) {
+            likeErrorMessage = "Ошибка удаления лайка: ${e.message}"
+            null
+        }
+    }
+
+    fun updateEventInfo(
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val eventId = event?.eventId
+                if (eventId == null) {
+                    onResult(false, "Event ID is null")
+                    return@launch
+                }
+
+                val newImageUrl = if (eventPictureUri != null) {
+                    try {
+                        repository.uploadImageToCloudinary(eventPictureUri!!).also {
+                            eventPicture = it
+                        }
+                    } catch (e: Exception) {
+                        onResult(false, "Image upload failed: ${e.message}")
+                        return@launch
+                    }
+                } else {
+                    event?.eventPicture
+                }
+
+                val request = UpdateEventRequest(
+                    newTitle = eventTitle,
+                    newDescription = eventDescription,
+                    newLocation = eventLocation,
+                    newCoordinates = eventCoordinates,
+                    newPicture = newImageUrl // ВАЖНО
+                )
+
+                val response = repository.updateEvent(
+                    eventId = eventId,
+                    request = request
+                )
+
+                if (response.isSuccessful) {
+                    event = event?.copy(
+                        name = eventTitle,
+                        description = eventDescription,
+                        location = eventLocation,
+                        eventPicture = newImageUrl,
+                        locationCoordinates = eventCoordinates
+                    )
+                    onResult(true, "Event updated successfully")
+                } else {
+                    onResult(false, "Update failed: ${response.message()}")
+                }
+
+            } catch (e: Exception) {
+                onResult(false, "Exception: ${e.message}")
+            }
+        }
+    }
+
+    private val _eventMedia = mutableStateOf<List<String>>(emptyList())
+    val eventMedia: List<String> get() = _eventMedia.value
+
+    fun fetchEventMedia(eventId: String, onError: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                val media = repository.getEventMedia(eventId)
+                _eventMedia.value = media
+            } catch (e: Exception) {
+                onError(e.message ?: "Unknown error")
+            }
+        }
+    }
+
     fun clearEntries() {
         eventTitle = ""
         eventDescription = ""
         eventLocation = ""
+        eventCoordinates = ""
         eventTags = ""
         eventCategory = ""
         setEventType("Open")

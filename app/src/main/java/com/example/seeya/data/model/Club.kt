@@ -10,7 +10,7 @@ data class Club(
     val clubPicture: String? = "",
     val isOpen: Boolean,
     val creator: Creator,
-    val participants: List<Participant> = emptyList(),
+    val participants: List<String> = emptyList(),
     val createdAt: LocalDate,
     val clubTags: String,
     val category: String,

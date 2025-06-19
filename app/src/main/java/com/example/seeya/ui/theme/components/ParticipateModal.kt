@@ -21,6 +21,10 @@ import androidx.compose.ui.unit.sp
 import com.example.seeya.data.model.Event
 import com.example.seeya.ui.theme.Poppins
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -29,20 +33,19 @@ fun ParticipateModal(
     onOk: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val formattedDate = LocalDateTime.parse(event.startDate)
+        .format(DateTimeFormatter.ofPattern("dd.MM HH:mm"))
+
     AlertDialog(
         onDismissRequest = onOk,
         dismissButton = {},
         confirmButton = {
-            TextButton(
-                onClick = onOk
-            ) {
+            TextButton(onClick = onOk) {
                 Text(
                     text = "Ok",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
             }
@@ -54,9 +57,7 @@ fun ParticipateModal(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
         },
@@ -73,14 +74,6 @@ fun ParticipateModal(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
-
-                val dateSubString = event.startDate.substringBefore(" (")
-
-                val inputFormat = SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z", Locale.US)
-                val date = inputFormat.parse(dateSubString)
-
-                val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                val formattedDate = outputFormat.format(date)
 
                 Text(
                     buildAnnotatedString {
@@ -106,8 +99,8 @@ fun ParticipateModal(
                         }
                     },
                     textAlign = TextAlign.Center
-
                 )
+
                 Text(
                     buildAnnotatedString {
                         withStyle(

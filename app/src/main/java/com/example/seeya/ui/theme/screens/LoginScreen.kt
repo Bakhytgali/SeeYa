@@ -92,8 +92,9 @@ fun LoginScreen(
             CustomTextField(
                 text = authViewModel.loginPassword,
                 placeholder = "Password",
-                onValueChange = {
-                    authViewModel.onLoginPasswordChange(it)
+                onValueChange = { input ->
+                    val noSpaces = input.replace(" ", "")
+                    authViewModel.onLoginPasswordChange(noSpaces)
                     authViewModel.setErrorValue(false)
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -136,6 +137,8 @@ fun LoginScreen(
                     } else {
                         authViewModel.login(
                             onSuccess = {
+                                authViewModel.onLoginTextChange("")
+                                authViewModel.onLoginPasswordChange("")
                                 navController.navigate("main") {
                                     popUpTo(0) { inclusive = true }
                                     restoreState = false

@@ -1,13 +1,9 @@
 package com.example.seeya.ui.theme.screens
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Base64
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,14 +37,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.seeya.data.model.UpdateProfileRequest
 import com.example.seeya.ui.theme.components.CustomTextField
 import com.example.seeya.ui.theme.components.CustomTitleButton
 import com.example.seeya.ui.theme.components.SeeYaLogo
 import com.example.seeya.ui.theme.components.SimpleTopBar
-import com.example.seeya.viewmodel.BottomBarViewModel
 import com.example.seeya.viewmodel.auth.AuthViewModel
-import java.io.ByteArrayOutputStream
 
 
 @Composable
@@ -107,21 +100,16 @@ fun EditMyProfileScreenContent(
     var surname by remember { mutableStateOf(user.value?.surname ?: "") }
     var password by remember { mutableStateOf("") }
 
-    var picture by remember {
+    val picture by remember {
         mutableStateOf(user.value?.profilePicture)
     }
 
-    var selectedBitmap by remember { mutableStateOf(picture?.let { decodeBase64ToBitmap(it) }) }
+    var selectedUri: Uri? by remember { mutableStateOf(null) }
 
-    val context = LocalContext.current
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
-                val bitmap = handleImageUri(context, it)
-                selectedBitmap = bitmap
-                bitmap?.let { newBitmap ->
-                    picture = encodeToBase64(newBitmap)
-                }
+                selectedUri = it
             }
         }
 
@@ -136,6 +124,9 @@ fun EditMyProfileScreenContent(
 
         if (showSuccessDialog) {
             AlertDialog(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                textContentColor = MaterialTheme.colorScheme.onBackground,
+                titleContentColor = MaterialTheme.colorScheme.onBackground,
                 onDismissRequest = { showSuccessDialog = false },
                 title = { Text("Success") },
                 text = { Text("Your profile was updated successfully!") },
@@ -152,6 +143,9 @@ fun EditMyProfileScreenContent(
 
         showErrorDialog?.let { errorMsg ->
             AlertDialog(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                textContentColor = MaterialTheme.colorScheme.onBackground,
+                titleContentColor = MaterialTheme.colorScheme.onBackground,
                 onDismissRequest = { showErrorDialog = null },
                 title = { Text("Error") },
                 text = { Text(errorMsg) },
@@ -183,14 +177,29 @@ fun EditMyProfileScreenContent(
                     .clickable { launcher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
-                selectedBitmap?.let {
-                    Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Selected Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } ?: SeeYaLogo(fontSize = 74)
+                when {
+                    selectedUri != null -> {
+                        AsyncImage(
+                            model = selectedUri,
+                            contentDescription = "Selected Image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    !picture.isNullOrBlank() -> {
+                        AsyncImage(
+                            model = picture,
+                            contentDescription = "Current Profile Picture",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    else -> {
+                        SeeYaLogo(fontSize = 74)
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -205,8 +214,11 @@ fun EditMyProfileScreenContent(
                 placeholder = "new username",
                 text = username,
                 limit = 20,
-                modifier = Modifier.fillMaxWidth()
-            ) { username = it.lowercase() }
+                modifier = Modifier.fillMaxWidth(),
+                onValueChange = {
+                    username = it.lowercase()
+                }
+            )
 
             Spacer(Modifier.height(25.dp))
 
@@ -214,8 +226,9 @@ fun EditMyProfileScreenContent(
                 placeholder = "new name",
                 text = name,
                 limit = 20,
-                modifier = Modifier.fillMaxWidth()
-            ) { name = it }
+                modifier = Modifier.fillMaxWidth(),
+                onValueChange = { name = it }
+            )
 
             Spacer(Modifier.height(25.dp))
 
@@ -223,8 +236,10 @@ fun EditMyProfileScreenContent(
                 placeholder = "new surname",
                 text = surname,
                 limit = 20,
-                modifier = Modifier.fillMaxWidth()
-            ) { surname = it }
+                modifier = Modifier.fillMaxWidth(),
+                onValueChange = { surname = it }
+
+            )
 
             Spacer(Modifier.height(25.dp))
 
@@ -232,34 +247,59 @@ fun EditMyProfileScreenContent(
                 placeholder = "new password (optional)",
                 text = password,
                 limit = 32,
-                modifier = Modifier.fillMaxWidth()
-            ) { password = it }
+                modifier = Modifier.fillMaxWidth(),
+                onValueChange = { password = it }
+            )
 
             Spacer(Modifier.weight(1f))
+
+            val context = LocalContext.current
 
             CustomTitleButton(
                 title = "Edit",
                 onClick = {
-                    val updatedUser = UpdateProfileRequest(
-                        username = if(user.value?.username == username) null else username,
-                        name = if(user.value?.name == name) null else name,
-                        profilePicture = if(user.value?.profilePicture == picture) null else picture,
-                        surname = if(user.value?.surname == surname) null else surname,
-                        password = password.ifBlank { null }
-                    )
-                    authViewModel.updateAccountInfo(
-                        request = updatedUser,
-                        onSuccess = {
-                            showSuccessDialog = true
-                        },
-                        onError = { message ->
-                            showErrorDialog = message
-                        }
-                    )
+                    val usernameUpdate = if (user.value?.username == username) null else username
+                    val nameUpdate = if (user.value?.name == name) null else name
+                    val surnameUpdate = if (user.value?.surname == surname) null else surname
+                    val passwordUpdate = password.ifBlank { null }
+
+                    if (selectedUri != null) {
+                        authViewModel.updatePhoto(
+                            uri = selectedUri!!,
+                            context = context,
+                            onSuccess = {
+                                val request = UpdateProfileRequest(
+                                    username = usernameUpdate,
+                                    name = nameUpdate,
+                                    surname = surnameUpdate,
+                                    password = passwordUpdate,
+                                    profilePicture = null
+                                )
+                                authViewModel.updateAccountInfo(
+                                    request = request,
+                                    onSuccess = { showSuccessDialog = true },
+                                    onError = { msg -> showErrorDialog = msg }
+                                )
+                            },
+                            onError = { msg -> showErrorDialog = msg }
+                        )
+                    } else {
+                        val request = UpdateProfileRequest(
+                            username = usernameUpdate,
+                            name = nameUpdate,
+                            surname = surnameUpdate,
+                            password = passwordUpdate,
+                            profilePicture = null
+                        )
+                        authViewModel.updateAccountInfo(
+                            request = request,
+                            onSuccess = { showSuccessDialog = true },
+                            onError = { msg -> showErrorDialog = msg }
+                        )
+                    }
                 },
                 isActive = true
             )
-
 
             Spacer(Modifier.height(30.dp))
         }
@@ -273,8 +313,17 @@ fun CustomTextFieldWithCounter(
     placeholder: String,
     text: String,
     limit: Int,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    maxLines: Int = 1,
+    fieldHeight: Int? = null
 ) {
+    val textFieldModifier = Modifier
+        .fillMaxWidth()
+        .then(
+            if (fieldHeight != null) Modifier.height(fieldHeight.dp)
+            else Modifier
+        )
+
     Column(
         modifier = modifier
     ) {
@@ -291,7 +340,8 @@ fun CustomTextFieldWithCounter(
             onValueChange = { newValue -> if (newValue.length <= limit) onValueChange(newValue) },
             placeholder = placeholder,
             limit = limit,
-            modifier = Modifier.fillMaxWidth()
+            modifier = textFieldModifier,
+            numberOfLines = maxLines
         )
     }
 }
@@ -354,33 +404,4 @@ fun ConfirmLeavingDialog(
             )
         }
     )
-}
-
-fun decodeBase64ToBitmap(base64Str: String): Bitmap? {
-    return try {
-        val decodedBytes = Base64.decode(base64Str, Base64.DEFAULT)
-        BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-    } catch (e: IllegalArgumentException) {
-        null
-    }
-}
-
-fun handleImageUri(context: android.content.Context, uri: Uri): Bitmap? {
-    return try {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val bytes = inputStream?.readBytes()
-        inputStream?.close()
-        bytes?.let {
-            BitmapFactory.decodeByteArray(it, 0, it.size)
-        }
-    } catch (e: Exception) {
-        null
-    }
-}
-
-fun encodeToBase64(bitmap: Bitmap): String {
-    val byteArrayOutputStream = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream)
-    val byteArray = byteArrayOutputStream.toByteArray()
-    return Base64.encodeToString(byteArray, Base64.DEFAULT)
 }

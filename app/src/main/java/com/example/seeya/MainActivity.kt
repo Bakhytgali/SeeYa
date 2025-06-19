@@ -19,6 +19,7 @@ import com.example.seeya.viewmodel.event.EventViewModel
 import com.example.seeya.viewmodel.event.EventViewModelFactory
 import com.example.seeya.viewmodel.search.SearchViewModel
 import com.example.seeya.viewmodel.search.SearchViewModelFactory
+import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
     private lateinit var authViewModel: AuthViewModel
@@ -59,7 +60,11 @@ class MainActivity : ComponentActivity() {
             }
         } ?: "splash"
 
-        val themeViewModel: ThemeViewModel = ThemeViewModel(application)
+        val themeViewModel = ThemeViewModel(application)
+
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext, "AIzaSyBMgzZZuOns7jCNjuwWOP4-C0B72CH9VHM")
+        }
 
         setContent {
             SeeYaTheme(darkTheme = themeViewModel.isDarkMode.value) {

@@ -10,11 +10,15 @@ import com.example.seeya.data.model.EventApplication
 import com.example.seeya.data.model.LoginResponse
 import com.example.seeya.data.model.LoginRequest
 import com.example.seeya.data.model.Participant
+import com.example.seeya.data.model.PostModel
+import com.example.seeya.data.model.PostRequestModel
 import com.example.seeya.data.model.QrDataModel
+import com.example.seeya.data.model.RatingRequest
 import com.example.seeya.data.model.SearchResponse
 import com.example.seeya.data.model.SearchUser
 import com.example.seeya.data.model.SignInRequest
 import com.example.seeya.data.model.SignInResponse
+import com.example.seeya.data.model.UpdateEventRequest
 import com.example.seeya.data.model.UpdateProfileRequest
 import com.example.seeya.data.model.User
 import com.example.seeya.data.model.VerifyCodeRequest
@@ -31,7 +35,6 @@ import retrofit2.http.Query
 
 interface APIService {
     interface ApiService {
-
         // AUTHORIZATION
         @POST("auth/login")
         suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
@@ -53,8 +56,38 @@ interface APIService {
         @GET("events/")
         suspend fun getAllEvents(): Response<List<Event>>
 
+        @GET("users/joinedEvents")
+        suspend fun getVisitedEvents(@Header("Authorization") token: String): Response<List<Event>>
+
         @GET("events/{eventId}")
         suspend fun getEvent(@Path("eventId") eventId: String): Response<Event>
+
+        @POST("events/rate/{eventId}")
+        suspend fun rateEvent(
+            @Path("eventId") eventId: String,
+            @Body ratingRequest: RatingRequest,
+            @Header("Authorization") token: String
+        ): Response<String>
+
+
+        @POST("posts/create/{eventId}")
+        suspend fun addPost(
+            @Header("Authorization") token: String,
+            @Path("eventId") eventId: String,
+            @Body post: PostRequestModel
+        ): Response<Unit>
+
+        @GET("posts/{postId}")
+        suspend fun getPost(@Path("postId") postId: String): Response<PostModel>
+
+        @GET("posts/event/{eventId}")
+        suspend fun fetchPosts(@Path("eventId") eventId: String): Response<List<PostModel>>
+
+        @POST("posts/like/{eventId}")
+        suspend fun likePost(@Path("eventId") eventId: String, @Header("Authorization") token: String): Response<List<String>>
+
+        @POST("posts/unlike/{eventId}")
+        suspend fun unlikePost(@Path("eventId") eventId: String, @Header("Authorization") token: String): Response<List<String>>
 
         @GET("users/eventsCreated")
         suspend fun getMyEvents(@Header("Authorization") token: String): Response<List<Event>>
@@ -63,15 +96,23 @@ interface APIService {
         suspend fun getAttendanceList(@Path("eventId") eventId: String): Response<List<Participant>>
 
         @POST("users/check-attendance")
-        suspend fun checkAttendance(@Body request: QrDataModel): Response<List<Participant>>
+        suspend fun checkAttendance(@Body request: QrDataModel): Response<List<String>>
+
+        @GET("posts/media/{eventId}")
+        suspend fun getEventMedia(@Path("eventId") eventId: String): Response<List<String>>
 
         // Join events
         @POST("users/join/{eventId}")
         suspend fun joinEvent(@Header("Authorization") token: String, @Path("eventId") eventId: String): Response<Unit>
 
+        // SEARCHING
         // Search User
         @GET("/search/users")
         suspend fun searchUser(@Query("query") value: String): Response<SearchResponse<List<SearchUser>>>
+
+        // Search Events
+        @GET("/search/events")
+        suspend fun searchEvents(@Query("query") value: String): Response<SearchResponse<List<Event>>>
 
         @GET("/users/{userId}")
         suspend fun getUserById(@Path("userId") userId: String): Response<User>
@@ -106,5 +147,13 @@ interface APIService {
         suspend fun updateAccountInfo(
             @Header("Authorization") token: String,
             @Body request: UpdateProfileRequest): Response<User>
+
+        @PUT("/events/update/{eventId}")
+        suspend fun updateEventInfo(
+            @Header("Authorization") token: String,
+            @Body request: UpdateEventRequest,
+            @Path("eventId") eventId: String
+        ): Response<Unit>
+
     }
 }

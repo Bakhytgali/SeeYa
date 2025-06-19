@@ -5,6 +5,8 @@ plugins {
     kotlin("plugin.serialization") version "1.9.10"
 
     id("com.google.gms.google-services")
+
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -55,6 +57,15 @@ android {
 }
 
 dependencies {
+
+    implementation (libs.material)
+
+    implementation(libs.accompanist.permissions)
+
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+    implementation(libs.places)
+
     implementation (libs.firebase.messaging)
 
     implementation(libs.okhttp)
@@ -67,10 +78,9 @@ dependencies {
 
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.runtime.livedata)
-
+    implementation(libs.androidx.core.i18n)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
-
 
     // Coil for Images
     implementation(libs.coil.compose)

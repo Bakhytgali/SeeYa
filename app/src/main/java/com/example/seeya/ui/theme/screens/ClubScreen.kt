@@ -12,6 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,6 +74,10 @@ fun ClubScreenContent(
         }
     }
 
+    var showAlreadyJoinedDialog by remember {
+        mutableStateOf(false)
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -98,7 +106,7 @@ fun ClubScreenContent(
                     Text("Failed to load club")
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = {
-                        // clubsViewModel.getClub(clubId)
+
                     }) {
                         Text("Retry")
                     }
@@ -242,7 +250,7 @@ fun ClubScreenContent(
                             EventClubScreenButton(
                                 title = "Joined",
                                 onClick = {
-                                    // clubsViewModel.showAlreadyJoinedDialog(true)
+                                    showAlreadyJoinedDialog = true
                                 },
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                                 textColor = MaterialTheme.colorScheme.primary,
@@ -321,30 +329,6 @@ fun ClubScreenContent(
         )
     }
 
-    if (clubsViewModel.showAlreadyJoinedDialog.value) {
-        AlertDialog(
-            onDismissRequest = { clubsViewModel.showAlreadyJoinedDialog(false) },
-            confirmButton = {
-                TextButton(
-                    onClick = { clubsViewModel.showAlreadyJoinedDialog(false) }
-                ) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        clubsViewModel.showAlreadyJoinedDialog(false)
-                    }
-                ) {
-                    Text("Leave", color = Color.Red)
-                }
-            },
-            title = { Text("Already Joined") },
-            text = { Text("You are already a member of this club.") }
-        )
-    }
-
     if (clubsViewModel.showClubInfoDialog.value) {
         clubsViewModel.newClub?.let { club ->
             ClubInfoDialog(
@@ -353,6 +337,30 @@ fun ClubScreenContent(
             )
         }
     }*/
+
+        if (showAlreadyJoinedDialog) {
+            AlertDialog(
+                onDismissRequest = { showAlreadyJoinedDialog = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = { showAlreadyJoinedDialog = false }
+                    ) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showAlreadyJoinedDialog = false
+                        }
+                    ) {
+                        Text("Leave", color = Color.Red)
+                    }
+                },
+                title = { Text("Already Joined") },
+                text = { Text("You are already a member of this club.") }
+            )
+        }
     }
 }
 

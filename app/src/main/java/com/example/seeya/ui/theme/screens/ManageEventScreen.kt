@@ -23,7 +23,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
@@ -59,6 +61,7 @@ import com.example.seeya.data.model.Participant
 import com.example.seeya.data.model.QrCodeData
 import com.example.seeya.data.model.QrDataModel
 import com.example.seeya.data.model.SearchUser
+import com.example.seeya.ui.theme.components.ManageEventInfo
 import com.example.seeya.ui.theme.components.SimpleTopBar
 import com.example.seeya.viewmodel.event.EventViewModel
 import com.journeyapps.barcodescanner.ScanContract
@@ -74,7 +77,7 @@ fun ManageEventScreen(
     eventViewModel: EventViewModel,
     modifier: Modifier = Modifier
 ) {
-    val manageOptions = listOf("Info", "Attendance")
+    val manageOptions = listOf("Info", "Applications", "Attendance")
 
     var manageOption by remember { mutableStateOf(manageOptions[0]) }
 
@@ -102,10 +105,10 @@ fun ManageEventScreen(
                 eventViewModel.checkAttendance(
                     qrData = newQRData,
                     onSuccess = {
-
+                        Toast.makeText(context, "User Was Added to the Attendance", Toast.LENGTH_SHORT).show()
                     },
                     onError = {
-
+                        Toast.makeText(context, "Invalid QR format", Toast.LENGTH_SHORT).show()
                     }
                 )
             } catch (e: Exception) {
@@ -138,17 +141,19 @@ fun ManageEventScreen(
             }
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues),
-            contentAlignment = Alignment.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                ,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -205,6 +210,12 @@ fun ManageEventScreen(
                 ) { page ->
                     when (page) {
                         0 -> {
+                            ManageEventInfo(
+                                eventViewModel = eventViewModel,
+                                navController = navController
+                            )
+                        }
+                        1 -> {
                             ManageApplications(
                                 applicants = eventViewModel.applications,
                                 loading = eventViewModel.loadingApplications,
@@ -216,7 +227,7 @@ fun ManageEventScreen(
                                 }
                             )
                         }
-                        1 -> {
+                        2 -> {
                             ManageEventAttendance(
                                 scanLauncher = scanLauncher,
                                 modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -320,17 +331,6 @@ fun ManageEventAttendance(
             }
 
             Spacer(Modifier.height(40.dp))
-
-            Text(
-                "Attendees:",
-                color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(Modifier.height(20.dp))
 
             if(loading.value) {
                 CircularProgressIndicator()

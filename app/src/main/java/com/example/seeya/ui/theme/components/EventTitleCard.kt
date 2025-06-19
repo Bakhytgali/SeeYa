@@ -80,7 +80,7 @@ fun EventTitleCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = event.category,
+                text = event.category ?: "Null",
                 fontSize = 14.sp,
                 fontFamily = Poppins,
                 textAlign = TextAlign.Center,

@@ -3,10 +3,10 @@ package com.example.seeya.ui.theme.components
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,10 +26,30 @@ fun CreateEventDetails(
     onLocationChange: (String) -> Unit,
     eventDateTime: LocalDateTime,
     onDateTimeChange: (LocalDateTime) -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     var pickedDateTime by rememberSaveable { mutableStateOf(eventDateTime) }
+
+    var showMap by remember { mutableStateOf(false) }
+
+    if (showMap) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(0.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            MapPickerContent(
+                onLocationPicked = { latLng ->
+                    val coords = "${latLng.latitude}, ${latLng.longitude}"
+                    onLocationChange(coords)
+                    showMap = false
+                },
+            )
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -75,22 +95,9 @@ fun CreateEventDetails(
                     tint = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.size(20.dp)
                 )
-            }
-        )
-
-        CustomTextField(
-            text = location,
-            placeholder = "Location Link (2gis or GMaps)",
-            onValueChange = onLocationChange,
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Link,
-                    contentDescription = "Location Icon",
-                    tint = MaterialTheme.colorScheme.secondaryContainer,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+            },
+            isActive = false,
+            onClick = onClick
         )
 
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
@@ -131,7 +138,6 @@ fun CreateEventDetails(
             },
             modifier = Modifier.fillMaxWidth()
         )
-
 
         Log.d("Date Picker", "$eventDateTime")
     }

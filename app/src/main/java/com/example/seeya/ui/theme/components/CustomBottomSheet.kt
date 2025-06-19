@@ -46,7 +46,7 @@ fun CustomBottomSheet(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Event Type",
+                text = "com.example.seeya.data.model.Event Type",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground
             )
